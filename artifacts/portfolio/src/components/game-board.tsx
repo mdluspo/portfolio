@@ -30,12 +30,7 @@ function PlacedTower({
 }) {
   const Icon = unit.icon;
   return (
-    <motion.div
-      key="placed"
-      initial={{ scale: 0, rotate: -8, y: 12 }}
-      animate={{ scale: 1, rotate: 0, y: 0 }}
-      exit={{ scale: 0, opacity: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 18 }}
+    <div
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
@@ -44,6 +39,14 @@ function PlacedTower({
         isDragging && "opacity-0"
       )}
     >
+      <motion.div
+        key="placed"
+        initial={{ scale: 0, rotate: -8, y: 12 }}
+        animate={{ scale: 1, rotate: 0, y: 0 }}
+        exit={{ scale: 0, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 18 }}
+        className="relative flex flex-col items-center"
+      >
       {/* Chat bubble — only for the "Me" unit once placed */}
       {unit.key === "me" && meMessage && (
         <motion.div
@@ -78,7 +81,8 @@ function PlacedTower({
       >
         <X size={14} strokeWidth={3} />
       </button>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }
 
