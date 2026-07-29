@@ -7,23 +7,23 @@ import { LockedSection } from "@/components/locked-section";
 const PROJECTS = [
   {
     id: 1,
-    title: "LootBox UI",
-    description: "A playful, high-performance UI kit for game menus. Built with React and Framer Motion to make standard web components feel like juicy game elements.",
-    tags: ["React", "Framer Motion", "Tailwind"],
+    title: "Project Name",
+    description: "Project description trulala trulala.",
+    tags: ["Tool", "Tool", "Tool"],
     color: "bg-blue-100",
   },
   {
     id: 2,
-    title: "Quest Log Dashboard",
-    description: "A task management tool reimagined as an RPG quest log. Features drag-and-drop prioritization and experience point progression.",
-    tags: ["TypeScript", "Zustand", "CSS Modules"],
+    title: "Project Name",
+    description: "Project description trulala trulala.",
+    tags: ["Tool", "Tool", "Tool"],
     color: "bg-green-100",
   },
   {
     id: 3,
-    title: "Arcade Portfolio",
-    description: "An experimental webGL portfolio experience featuring classic arcade aesthetics mixed with modern web typography.",
-    tags: ["Three.js", "React Three Fiber", "GLSL"],
+    title: "Project Name",
+    description: "Project description trulala trulala.",
+    tags: ["Tool", "Tool", "Tool"],
     color: "bg-yellow-100",
   }
 ];

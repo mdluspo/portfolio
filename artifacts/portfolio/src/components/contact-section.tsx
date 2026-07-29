@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Github, Linkedin, Twitter } from "lucide-react";
+import { Github, Instagram, Linkedin } from "lucide-react";
 import { LockedSection } from "@/components/locked-section";
 
 export function ContactSection() {
@@ -31,21 +31,21 @@ export function ContactSection() {
 
             <div className="inline-block bg-white border-cartoon shadow-cartoon rounded-2xl p-4 md:p-8 transform rotate-1 hover:rotate-0 transition-transform duration-300">
               <a 
-                href="mailto:hello@alex.dev" 
+                href="mailto:mdluspo122604@gmail.com" 
                 className="text-2xl md:text-4xl font-display font-bold hover:text-primary transition-colors block mb-8"
               >
-                hello@alex.dev
+                mdluspo122604@gmail.com
               </a>
 
               <div className="flex justify-center gap-4">
-                <a href="#" className="w-12 h-12 rounded-xl border-cartoon bg-white flex items-center justify-center hover:bg-black hover:text-white transition-colors">
+                <a href="https://github.com/mdluspo" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl border-cartoon bg-white flex items-center justify-center hover:bg-black hover:text-white transition-colors">
                   <Github size={24} strokeWidth={2.5} />
                 </a>
-                <a href="#" className="w-12 h-12 rounded-xl border-cartoon bg-white flex items-center justify-center hover:bg-[#0077B5] hover:text-white transition-colors">
+                <a href="https://www.linkedin.com/in/martin-luspo/" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl border-cartoon bg-white flex items-center justify-center hover:bg-[#0077B5] hover:text-white transition-colors">
                   <Linkedin size={24} strokeWidth={2.5} />
                 </a>
-                <a href="#" className="w-12 h-12 rounded-xl border-cartoon bg-white flex items-center justify-center hover:bg-black hover:text-white transition-colors">
-                  <Twitter size={24} strokeWidth={2.5} />
+                <a href="https://www.instagram.com/mdluspo/" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl border-cartoon bg-white flex items-center justify-center hover:bg-black hover:text-white transition-colors">
+                  <Instagram size={24} strokeWidth={2.5} />
                 </a>
               </div>
             </div>

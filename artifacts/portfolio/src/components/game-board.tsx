@@ -1,166 +1,305 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { UNITS, TowerKey } from "@/lib/gameData";
+import React, { useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { UNITS } from "@/lib/gameData";
+import type { TowerKey } from "@/lib/gameData";
 import { useUnlockState } from "@/lib/unlockState";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const SPOTS = [
-  { id: 0, left: "25%", top: "75%" },
-  { id: 1, left: "45%", top: "55%" },
-  { id: 2, left: "65%", top: "35%" },
-  { id: 3, left: "85%", top: "20%" },
-];
+type DeployedTower = {
+  key: TowerKey;
+  left: string;
+  top: string;
+};
+
+// Sub-component so Icon is a proper capitalized local variable
+function PlacedTower({
+  unit,
+  meMessage,
+  isDragging,
+  onDragStart,
+  onDragEnd,
+  onRemove,
+}: {
+  unit: (typeof UNITS)[number];
+  meMessage: string | null;
+  isDragging: boolean;
+  onDragStart: (e: React.DragEvent) => void;
+  onDragEnd: () => void;
+  onRemove: (e: React.MouseEvent) => void;
+}) {
+  const Icon = unit.icon;
+  return (
+    <motion.div
+      key="placed"
+      initial={{ scale: 0, rotate: -8, y: 12 }}
+      animate={{ scale: 1, rotate: 0, y: 0 }}
+      exit={{ scale: 0, opacity: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 18 }}
+      draggable
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      className={cn(
+        "relative group flex flex-col items-center cursor-grab active:cursor-grabbing",
+        isDragging && "opacity-0"
+      )}
+    >
+      {/* Chat bubble — only for the "Me" unit once placed */}
+      {unit.key === "me" && meMessage && (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute bottom-full mb-3 w-40 bg-white border-[2.5px] border-black px-3 py-2 rounded-xl shadow-[3px_3px_0_0_#000] text-[11px] leading-tight font-sans font-bold text-center z-30"
+        >
+          {meMessage}
+          <div className="absolute -bottom-[9px] left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-b-[2.5px] border-r-[2.5px] border-black rotate-45" />
+        </motion.div>
+      )}
+
+      {/* Tower body */}
+      <div
+        className={cn(
+          "w-16 h-20 rounded-xl border-[2.5px] border-black flex items-center justify-center shadow-[3px_3px_0_0_#000] bg-white",
+          unit.color
+        )}
+      >
+        <Icon size={36} className="text-black" />
+      </div>
+
+      {/* Name tag */}
+      <div className="mt-2 whitespace-nowrap bg-white border-[2px] border-black px-2 py-0.5 rounded-lg text-[10px] font-display font-bold shadow-[1px_1px_0_0_#000]">
+        {unit.name}
+      </div>
+
+      {/* Remove on hover */}
+      <button
+        onClick={onRemove}
+        className="absolute -top-3 -right-3 w-7 h-7 bg-destructive text-white border-[2px] border-black rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 z-20"
+      >
+        <X size={14} strokeWidth={3} />
+      </button>
+    </motion.div>
+  );
+}
 
 export function GameBoard() {
   const { placed, place, remove } = useUnlockState();
-  const [selectedUnit, setSelectedUnit] = useState<TowerKey | null>(null);
-  const [spotAssignments, setSpotAssignments] = useState<Record<number, TowerKey>>({});
+  const [deployedTowers, setDeployedTowers] = useState<Partial<Record<TowerKey, DeployedTower>>>({});
+  const [draggingKey, setDraggingKey] = useState<TowerKey | null>(null);
+  const sceneRef = useRef<HTMLDivElement | null>(null);
+  const dragKey = useRef<TowerKey | null>(null);
 
-  const handleSpotClick = (spotId: number) => {
-    if (selectedUnit && !placed.has(selectedUnit)) {
-      setSpotAssignments(prev => ({ ...prev, [spotId]: selectedUnit }));
-      place(selectedUnit);
-      setSelectedUnit(null);
-    }
+  const onDragStart = (e: React.DragEvent, key: TowerKey) => {
+    dragKey.current = key;
+    e.dataTransfer.setData("text/plain", key);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const dragPreview = e.currentTarget.cloneNode(true) as HTMLElement;
+    dragPreview.style.position = "fixed";
+    dragPreview.style.top = "-1000px";
+    dragPreview.style.left = "-1000px";
+    dragPreview.style.opacity = "1";
+    dragPreview.style.pointerEvents = "none";
+    dragPreview.style.transform = "none";
+    document.body.appendChild(dragPreview);
+    e.dataTransfer.setDragImage(
+      dragPreview,
+      e.clientX - rect.left,
+      e.clientY - rect.top,
+    );
+    window.setTimeout(() => dragPreview.remove(), 0);
+    window.requestAnimationFrame(() => setDraggingKey(key));
   };
 
-  const handleRemove = (e: React.MouseEvent, spotId: number, unitKey: TowerKey) => {
+  const onDragEnd = () => {
+    dragKey.current = null;
+    setDraggingKey(null);
+  };
+
+  const onSceneDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const onSceneDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const key = dragKey.current;
+    if (!key) return;
+
+    const rect = sceneRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const left = ((e.clientX - rect.left) / rect.width) * 100;
+    const top = ((e.clientY - rect.top) / rect.height) * 100;
+
+    setDeployedTowers(prev => ({
+      ...prev,
+      [key]: {
+        key,
+        left: `${Math.min(96, Math.max(4, left))}%`,
+        top: `${Math.min(82, Math.max(12, top))}%`,
+      },
+    }));
+    if (!placed.has(key)) place(key);
+    onDragEnd();
+  };
+
+  const onTowerDrop = (e: React.DragEvent<HTMLDivElement>, replacedKey: TowerKey) => {
+    e.preventDefault();
+    const key = dragKey.current;
+    if (!key) return;
+    if (key === replacedKey) {
+      onSceneDrop(e);
+      return;
+    }
     e.stopPropagation();
-    setSpotAssignments(prev => {
+
+    const target = deployedTowers[replacedKey];
+    if (!target) return;
+
+    setDeployedTowers(prev => {
       const next = { ...prev };
-      delete next[spotId];
+      delete next[replacedKey];
+      next[key] = {
+        key,
+        left: target.left,
+        top: target.top,
+      };
       return next;
     });
-    remove(unitKey);
+    remove(replacedKey);
+    if (!placed.has(key)) place(key);
+    onDragEnd();
   };
 
-  const placedCount = placed.size;
-  const meUnit = UNITS.find(u => u.key === 'me');
-  const meMessage = placedCount === 4 
-    ? "You've unlocked everything. Scroll down to explore!" 
-    : placedCount > 0 
-    ? "Keep going! Each tower reveals something new."
-    : meUnit?.chatMessage;
+  const handleRemove = (e: React.MouseEvent, key: TowerKey) => {
+    e.stopPropagation();
+    setDeployedTowers(prev => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+    remove(key);
+  };
 
-  const trayUnits = UNITS.filter(u => u.key !== 'me');
+  const mePlaced = placed.has("me");
+  const allOthers = (["uiux", "frontend", "techstack", "signal"] as TowerKey[]).every(k => placed.has(k));
+  const meMessage = allOthers
+    ? "You've unlocked everything — scroll down to explore!"
+    : mePlaced
+    ? "Deploy units to unlock portfolio sections."
+    : "Hi! Drag the towers onto their spots beside the road. Each one reveals a section of my portfolio.";
 
   return (
-    <div className="flex-1 flex flex-col w-full h-full relative border-t-[3px] lg:border-t-0 border-black">
-      
-      {/* SCENE AREA */}
-      <div className="flex-1 relative w-full min-h-[400px] overflow-hidden">
-        {/* The Road */}
-        <svg viewBox="0 0 1000 1000" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-          <path 
-            d="M -100,1000 C 300,900 700,400 1100,100"
+    <div className="absolute inset-0 select-none bg-white">
+      {/* SCENE */}
+      <div
+        className="absolute inset-0 overflow-hidden bg-white"
+        ref={sceneRef}
+        onDragOver={onSceneDragOver}
+        onDrop={onSceneDrop}
+      >
+        {/* Road SVG — S-curve from bottom-left toward right, matching sketch */}
+        <svg
+          viewBox="0 0 1000 600"
+          className="absolute inset-0 w-full h-full"
+          preserveAspectRatio="none"
+        >
+          {/* Outer blue band */}
+          <path
+            d="M 300,635 C 435,575 520,565 620,515 C 735,458 745,405 865,355 C 990,303 1080,275 1180,190"
             fill="none"
-            stroke="hsl(208, 61%, 85%)"
-            strokeWidth="160"
+            stroke="hsl(208 61% 88%)"
+            strokeWidth="90"
             strokeLinecap="round"
+            strokeLinejoin="round"
           />
-          <path 
-            d="M -100,1000 C 300,900 700,400 1100,100"
+          {/* White road surface */}
+          <path
+            d="M 300,635 C 435,575 520,565 620,515 C 735,458 745,405 865,355 C 990,303 1080,275 1180,190"
             fill="none"
             stroke="white"
-            strokeWidth="140"
+            strokeWidth="62"
             strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          {/* Centre dashes */}
+          <path
+            d="M 300,635 C 435,575 520,565 620,515 C 735,458 745,405 865,355 C 990,303 1080,275 1180,190"
+            fill="none"
+            stroke="hsl(208 61% 82%)"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray="16 18"
           />
         </svg>
 
-        {/* Me Stickfigure */}
-        <div className="absolute z-10 flex flex-col items-center" style={{ left: "15%", top: "88%", transform: "translate(-50%, -100%)" }}>
-          <motion.div
-            key={placedCount}
-            initial={{ opacity: 0, scale: 0.8, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="bg-white border-cartoon px-4 py-3 rounded-2xl shadow-cartoon-sm mb-4 w-48 text-center text-sm font-sans font-bold relative"
-          >
-            {meMessage}
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-b-[3px] border-r-[3px] border-black rotate-45" />
-          </motion.div>
-          {meUnit && <meUnit.icon size={80} className="text-black drop-shadow-md" />}
-        </div>
-
-        {/* Placement Spots */}
-        {SPOTS.map((spot) => {
-          const unitKey = spotAssignments[spot.id];
-          const unit = unitKey ? trayUnits.find(u => u.key === unitKey) : null;
-          
-          return (
-            <div 
-              key={spot.id}
-              className="absolute flex items-center justify-center -translate-x-1/2 -translate-y-1/2"
-              style={{ left: spot.left, top: spot.top }}
+        <AnimatePresence>
+          {Object.values(deployedTowers)
+            .filter((tower): tower is DeployedTower => Boolean(tower))
+            .map((tower) => {
+            const unit = UNITS.find(u => u.key === tower.key) ?? null;
+            if (!unit) return null;
+            return (
+            <div
+              key={tower.key}
+              className="absolute z-30 -translate-x-1/2 -translate-y-1/2"
+              style={{ left: tower.left, top: tower.top }}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => onTowerDrop(e, tower.key)}
             >
-              {!unit ? (
-                <div 
-                  onClick={() => handleSpotClick(spot.id)}
-                  className={cn(
-                    "w-16 h-16 rounded-full border-[4px] border-dashed transition-all bg-white/50",
-                    selectedUnit ? "border-primary cursor-pointer hover:bg-primary/20 animate-pulse shadow-cartoon-blue" : "border-black/20"
-                  )}
-                />
-              ) : (
-                <motion.div
-                  initial={{ scale: 0, y: 20 }}
-                  animate={{ scale: 1, y: 0 }}
-                  className="relative group flex flex-col items-center"
-                >
-                  <div className={cn("w-20 h-28 rounded-xl border-cartoon flex items-center justify-center shadow-cartoon bg-white", unit.color)}>
-                    <unit.icon size={48} className="text-black" />
-                  </div>
-                  <div className="absolute top-full mt-3 whitespace-nowrap bg-white border-2 border-black px-3 py-1.5 rounded-lg text-xs font-display font-bold shadow-cartoon-sm z-10">
-                    {unit.name}
-                  </div>
-                  <button
-                    onClick={(e) => handleRemove(e, spot.id, unit.key)}
-                    className="absolute -top-4 -right-4 w-10 h-10 bg-destructive text-white border-[3px] border-black rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 shadow-sm z-20"
-                  >
-                    <X size={20} strokeWidth={3} />
-                  </button>
-                </motion.div>
-              )}
+              <PlacedTower
+                unit={unit}
+                meMessage={unit.key === "me" ? meMessage : null}
+                isDragging={draggingKey === unit.key}
+                onDragStart={(e) => onDragStart(e, unit.key)}
+                onDragEnd={onDragEnd}
+                onRemove={(e) => handleRemove(e, unit.key)}
+              />
             </div>
-          )
-        })}
+            );
+          })}
+        </AnimatePresence>
       </div>
 
-      {/* HORIZONTAL UNIT TRAY */}
-      <div className="w-full bg-white border-t-[3px] border-black p-4 md:p-6 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <h3 className="font-display text-sm uppercase tracking-wider text-gray-500 mb-3 ml-2">Available Towers</h3>
-        <div className="flex gap-4 overflow-x-auto pb-4 px-2 snap-x">
-          {trayUnits.map(unit => {
+      {/* HORIZONTAL TRAY */}
+      <div className="absolute bottom-5 left-1/2 z-20 w-full -translate-x-1/2 bg-transparent px-3 py-3">
+        <p className="text-center font-display text-[10px] uppercase tracking-widest text-gray-400 mb-2">
+          Drag a unit anywhere
+        </p>
+        <div className="flex justify-center gap-2 overflow-x-auto pb-1">
+          {UNITS.map((unit) => {
             const isPlaced = placed.has(unit.key);
-            const isSelected = selectedUnit === unit.key;
+            const Icon = unit.icon;
             return (
-              <button
+              <div
                 key={unit.key}
-                onClick={() => !isPlaced && setSelectedUnit(isSelected ? null : unit.key)}
+                draggable={!isPlaced}
+                onDragStart={(e) => { if (!isPlaced) onDragStart(e, unit.key); }}
+                onDragEnd={onDragEnd}
                 className={cn(
-                  "snap-start flex-shrink-0 flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 w-48 sm:w-64 rounded-2xl border-cartoon transition-all text-left bg-white relative",
-                  isPlaced ? "opacity-50 grayscale bg-gray-100 cursor-not-allowed shadow-none" : "cursor-pointer hover:-translate-y-1 shadow-cartoon-sm hover:shadow-cartoon",
-                  isSelected && !isPlaced && "ring-4 ring-primary ring-offset-2 border-primary translate-y-[-4px] shadow-cartoon"
+                  "flex-shrink-0 w-20 h-24 flex flex-col items-center justify-center gap-1 rounded-lg border-[2.5px] border-black bg-white text-center transition-all duration-150",
+                  isPlaced
+                    ? "opacity-40 grayscale cursor-not-allowed"
+                    : "cursor-grab active:cursor-grabbing hover:-translate-y-1 shadow-[2px_2px_0_0_#000] hover:shadow-[4px_4px_0_0_#000]"
                 )}
               >
-                <div className={cn("w-14 h-14 rounded-xl border-[3px] border-black flex items-center justify-center shrink-0 shadow-sm", unit.color)}>
-                  <unit.icon size={28} className="text-black" />
+                <div className={cn("w-10 h-10 rounded-lg border-[2px] border-black flex items-center justify-center shrink-0", unit.color)}>
+                  <Icon size={20} className="text-black" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-display font-bold text-lg truncate">{unit.name}</div>
-                  <div className="text-xs font-sans text-gray-600 font-bold truncate mt-1">Unlocks: <span className="text-primary">{unit.unlocks}</span></div>
+                <div className="w-full px-1">
+                  <div className="font-display font-bold text-[11px] leading-[1.05]">{unit.name}</div>
+                  <div className="hidden">
+                    {unit.key === "me" ? "→ Instructions" : unit.unlocks ? `→ ${unit.unlocks}` : ""}
+                  </div>
                 </div>
                 {isPlaced && (
-                  <div className="absolute inset-0 bg-black/5 rounded-2xl flex items-center justify-center backdrop-blur-[1px]">
-                    <span className="bg-black text-white text-xs font-display px-3 py-1 rounded-full uppercase tracking-wider shadow-md">Deployed</span>
-                  </div>
+                  <span className="hidden">
+                    Placed
+                  </span>
                 )}
-              </button>
-            )
+              </div>
+            );
           })}
         </div>
       </div>
-
     </div>
   );
 }

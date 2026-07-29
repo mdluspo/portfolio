@@ -75,7 +75,7 @@ export const UNITS: Unit[] = [
   },
   {
     key: 'frontend',
-    name: 'Frontend Tower',
+    name: 'Projects Tower',
     unlocks: 'Projects',
     icon: FrontendIcon,
     color: 'bg-green-200'
