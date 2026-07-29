@@ -8,7 +8,7 @@ const SKILL_TREES = [
     title: "Design",
     icon: Paintbrush,
     color: "bg-pink-200",
-    skills: ["Figma", "UI/UX Research", "Wireframing", "Prototyping", "Design Systems", "Typography"]
+    skills: ["Figma", "UI/UX Research", "Wireframing", "Prototyping", "Design Systems"]
   },
   {
     title: "Code",
@@ -20,14 +20,14 @@ const SKILL_TREES = [
     title: "Tools",
     icon: Wrench,
     color: "bg-orange-200",
-    skills: ["Git", "VS Code", "Vite", "Webpack", "Vercel", "npm/yarn"]
+    skills: ["Git", "VS Code", "Vite", "Webpack", "Vercel"]
   }
 ];
 
 export function SkillsSection() {
   return (
     <LockedSection unlockKey="techstack" title="Skills & Tech Stack" towerName="Tech Stack Tower">
-      <section className="py-24 px-4 md:px-8 bg-black/5 relative z-10">
+      <section id="techstack" className="py-24 px-4 md:px-8 bg-black/5 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center gap-4 mb-16">
             <div className="h-1 flex-1 bg-black rounded-full" />

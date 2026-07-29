@@ -16,8 +16,6 @@ function PageContent() {
 
   const hasUnlockedSection = SECTION_KEYS.some((k) => placed.has(k));
   const allUnlocked = SECTION_KEYS.every((k) => placed.has(k));
-
-  // Keep the first screen focused until the user unlocks any content section.
   useEffect(() => {
     if (hasUnlockedSection) {
       document.documentElement.style.overflow = "";
