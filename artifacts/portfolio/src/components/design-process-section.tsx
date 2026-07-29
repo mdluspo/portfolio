@@ -1,51 +1,42 @@
 import { motion } from "framer-motion";
 import { LockedSection } from "@/components/locked-section";
 
-const STEPS = [
-  { num: "01", title: "Discover", desc: "Understanding the problem, the people, and the goals." },
-  { num: "02", title: "Define", desc: "Structuring the architecture and laying out the blueprints." },
-  { num: "03", title: "Design", desc: "Crafting the visual language and interaction paradigms." },
-  { num: "04", title: "Deliver", desc: "Building it robustly with code and shipping to production." },
-];
-
 export function DesignProcessSection() {
   return (
-    <LockedSection unlockKey="uiux" title="Design Process" towerName="UI/UX Tower">
-      <section className="py-24 px-4 md:px-8 bg-primary/5 relative z-10">
+    <LockedSection unlockKey="uiux" title="About Me" towerName="About Me Unit">
+      <section id="about" className="py-24 px-4 md:px-8 bg-white relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center gap-4 mb-12">
             <h2 className="text-4xl md:text-5xl font-display uppercase tracking-wider">
-              Design Process
+              About Me
             </h2>
             <div className="h-1 flex-1 bg-black rounded-full" />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            {STEPS.map((step, i) => (
-              <motion.div
-                key={step.num}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-white border-cartoon rounded-2xl p-6 shadow-cartoon hover:-translate-y-2 transition-transform duration-300"
-              >
-                <div className="text-5xl font-display text-primary/30 mb-4">{step.num}</div>
-                <h3 className="text-2xl font-display mb-2">{step.title}</h3>
-                <p className="font-sans font-bold text-gray-600">{step.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-
           <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="bg-white border-cartoon rounded-3xl p-8 md:p-12 shadow-cartoon max-w-4xl mx-auto text-center"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-10 items-center"
           >
-            <p className="text-xl md:text-2xl font-sans font-bold leading-relaxed text-gray-800">
-              I'm a student developer deeply passionate about the intersection of design and engineering. I believe that great UI/UX comes from understanding people first, then crafting systems that feel inevitable — not just pretty.
-            </p>
+            <div className="space-y-6">
+              <p className="text-xl md:text-2xl font-sans font-bold leading-relaxed text-gray-800">
+                I like building interfaces that feel good to use, especially fun.
+              </p>
+              <p className="text-lg md:text-xl font-sans font-semibold leading-relaxed text-gray-700">
+                I care a lot about making interfaces feel complete. From spacing, motion, layout, flow, and whether someone can figure out what to do without fighting the page. I am into frontend and UI/UX because it sits right between design and code, and that is pretty much the part that I enjoy most.
+              </p>
+              <p className="text-lg md:text-xl font-sans font-semibold leading-relaxed text-gray-700">
+                I use tools like React, TypeScript, Tailwind, and design systems, but my real goal is simple: make things clean, usable, and alive.
+              </p>
+              <p className="text-lg md:text-xl font-sans font-semibold leading-relaxed text-gray-700">
+                I am interested in internships, collaborations, and projects where I can keep improving as a frontend/UI/UX developer and build things that actually feel intentional.
+              </p>
+            </div>
+
+            <div className="relative mx-auto w-full max-w-[320px] aspect-[4/5] rounded-3xl border-[3px] border-black bg-primary/15 shadow-[8px_8px_0_0_#000] overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,white_0,white_18%,transparent_19%),linear-gradient(135deg,hsl(208_61%_88%),white)]" />
+            </div>
           </motion.div>
         </div>
       </section>

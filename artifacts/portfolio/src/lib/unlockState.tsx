@@ -6,6 +6,7 @@ interface UnlockState {
   placed: Set<TowerKey>;
   place: (key: TowerKey) => void;
   remove: (key: TowerKey) => void;
+  clear: () => void;
 }
 
 const UnlockContext = createContext<UnlockState | undefined>(undefined);
@@ -29,8 +30,12 @@ export function UnlockProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const clear = () => {
+    setPlaced(new Set());
+  };
+
   return (
-    <UnlockContext.Provider value={{ placed, place, remove }}>
+    <UnlockContext.Provider value={{ placed, place, remove, clear }}>
       {children}
     </UnlockContext.Provider>
   );
