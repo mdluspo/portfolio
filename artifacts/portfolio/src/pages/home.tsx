@@ -5,6 +5,7 @@ import { ProjectsSection } from "@/components/projects-section";
 import { SkillsSection } from "@/components/skills-section";
 import { ContactSection } from "@/components/contact-section";
 import { Footer } from "@/components/footer";
+import { ScrollToTop } from "@/components/scroll-to-top";
 import { UnlockProvider } from "@/lib/unlockState";
 import { useUnlockState } from "@/lib/unlockState";
 import type { TowerKey } from "@/lib/unlockState";
@@ -38,6 +39,7 @@ function PageContent() {
       {placed.has("techstack") && <SkillsSection />}
       {placed.has("signal") && <ContactSection />}
       {allUnlocked && <Footer />}
+      {hasUnlockedSection && <ScrollToTop />}
     </div>
   );
 }
