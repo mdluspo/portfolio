@@ -1,5 +1,5 @@
-import { useState } from "react";
-import type { CSSProperties, ElementType } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { CSSProperties, ElementType, PointerEvent as ReactPointerEvent } from "react";
 import { motion } from "framer-motion";
 import {
   Code,
@@ -7,6 +7,7 @@ import {
   MousePointerClick,
   Paintbrush,
   PencilRuler,
+  RotateCcw,
   Search,
   Wrench,
 } from "lucide-react";
@@ -206,6 +207,82 @@ function SkillLogo({ skill }: { skill: SkillKey }) {
 
 export function SkillsSection() {
   const [activeSkill, setActiveSkill] = useState<SkillKey>(SKILL_KEYS[0]);
+  const [keyboardView, setKeyboardView] = useState({ scale: 1, rotateX: 24, rotateY: 0 });
+  const keyboardRef = useRef<HTMLDivElement | null>(null);
+  const keyboardViewRef = useRef(keyboardView);
+  const rotateDragRef = useRef<{
+    x: number;
+    y: number;
+    rotateX: number;
+    rotateY: number;
+  } | null>(null);
+
+  useEffect(() => {
+    keyboardViewRef.current = keyboardView;
+  }, [keyboardView]);
+
+  useEffect(() => {
+    const keyboard = keyboardRef.current;
+    if (!keyboard) return;
+
+    const handleWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setKeyboardView((current) => {
+        if (event.buttons === 1) {
+          return {
+            ...current,
+            rotateX: Math.min(50, Math.max(-12, current.rotateX + event.deltaY * 0.035)),
+          };
+        }
+
+        return {
+          ...current,
+          scale: Math.min(1.18, Math.max(0.72, current.scale - event.deltaY * 0.0012)),
+        };
+      });
+    };
+
+    keyboard.addEventListener("wheel", handleWheel, { passive: false });
+
+    return () => {
+      keyboard.removeEventListener("wheel", handleWheel);
+    };
+  }, []);
+
+  const handleKeyboardPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    rotateDragRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      rotateX: keyboardViewRef.current.rotateX,
+      rotateY: keyboardViewRef.current.rotateY,
+    };
+  };
+
+  const handleKeyboardPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const start = rotateDragRef.current;
+    if (!start) return;
+
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+
+    setKeyboardView((current) => ({
+      ...current,
+      rotateX: Math.min(50, Math.max(-12, start.rotateX - dy * 0.16)),
+      rotateY: Math.min(22, Math.max(-22, start.rotateY + dx * 0.14)),
+    }));
+  };
+
+  const handleKeyboardPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    rotateDragRef.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
 
   return (
     <LockedSection unlockKey="techstack" title="Skills & Tech Stack" towerName="Tech Stack Tower">
@@ -236,15 +313,35 @@ export function SkillsSection() {
             </motion.div>
 
             <div className="skills-keyboard-scene" aria-label="Interactive skills keyboard">
+              <button
+                type="button"
+                className="skills-keyboard-reset"
+                aria-label="Reset keyboard view"
+                onClick={() => setKeyboardView({ scale: 1, rotateX: 24, rotateY: 0 })}
+              >
+                <RotateCcw className="h-5 w-5" strokeWidth={3} />
+              </button>
               <motion.div
                 initial={{ opacity: 0, rotateX: 24, y: 84, scale: 0.94 }}
-                whileInView={{ opacity: 1, rotateX: 24, y: 0, scale: 1 }}
+                whileInView={{
+                  opacity: 1,
+                  rotateX: keyboardView.rotateX,
+                  rotateY: keyboardView.rotateY,
+                  y: 0,
+                  scale: keyboardView.scale,
+                }}
+                animate={{
+                  rotateX: keyboardView.rotateX,
+                  rotateY: keyboardView.rotateY,
+                  scale: keyboardView.scale,
+                }}
                 viewport={{ once: true, amount: 0.32, margin: "-80px" }}
-                transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-                drag
-                dragSnapToOrigin
-                dragElastic={0.08}
-                dragMomentum={false}
+                ref={keyboardRef}
+                transition={{ type: "spring", stiffness: 140, damping: 20 }}
+                onPointerDown={handleKeyboardPointerDown}
+                onPointerMove={handleKeyboardPointerMove}
+                onPointerUp={handleKeyboardPointerUp}
+                onPointerCancel={handleKeyboardPointerUp}
                 className="skills-keyboard-deck"
               >
                 <div className="skills-keyboard-base" />
@@ -265,13 +362,8 @@ export function SkillsSection() {
                       onMouseEnter={() => setActiveSkill(skill)}
                       onFocus={() => setActiveSkill(skill)}
                     >
-                      <span className="skill-key-hole" />
                       <motion.span
                         className="skill-key-cap"
-                        drag
-                        dragSnapToOrigin
-                        dragElastic={0.2}
-                        dragMomentum={false}
                         whileHover={{ y: -9, z: 12 }}
                         whileFocus={{ y: -9, z: 12 }}
                         whileTap={{ y: -5, scale: 0.98 }}
