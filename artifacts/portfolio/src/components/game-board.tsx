@@ -169,6 +169,47 @@ function bulletSpawnOffset(key: TowerKey, ammoBeforeShot: number) {
   return { x: 0, y: 0 };
 }
 
+function bulletMuzzlePoint({
+  key,
+  towerX,
+  towerY,
+  targetX,
+  targetY,
+  ammoBeforeShot,
+}: {
+  key: TowerKey;
+  towerX: number;
+  towerY: number;
+  targetX: number;
+  targetY: number;
+  ammoBeforeShot: number;
+}) {
+  const dx = targetX - towerX;
+  const dy = targetY - towerY;
+  const distance = Math.max(1, Math.hypot(dx, dy));
+  const dirX = dx / distance;
+  const dirY = dy / distance;
+  const baseOffset = bulletSpawnOffset(key, ammoBeforeShot);
+
+  if (key === "signal") {
+    return {
+      x: towerX + dirX * 24,
+      y: towerY + dirY * 24,
+      dirX,
+      dirY,
+      distance,
+    };
+  }
+
+  return {
+    x: towerX + baseOffset.x,
+    y: towerY + baseOffset.y,
+    dirX,
+    dirY,
+    distance,
+  };
+}
+
 function TowerVisual({
   unit,
   meMessage,
@@ -435,7 +476,7 @@ export function GameBoard() {
           };
         }
 
-        const towerScreen = { x: tower.x, y: tower.y - window.scrollY };
+        const towerScreen = { x: tower.x, y: tower.y - window.scrollY - 12 };
         const target = nextEnemies
           .filter((enemy) => enemy.hp > 0)
           .map((enemy) => ({
@@ -447,20 +488,24 @@ export function GameBoard() {
 
         if (!target) return;
 
-        const dx = target.x - towerScreen.x;
-        const dy = target.y - towerScreen.y;
-        const distance = Math.max(1, Math.hypot(dx, dy));
         const kind = bulletKindFor(tower.key, ammoBeforeShot);
         const nextAmmo = Math.max(0, ammoBeforeShot - 1);
-        const spawnOffset = bulletSpawnOffset(tower.key, ammoBeforeShot);
+        const muzzle = bulletMuzzlePoint({
+          key: tower.key,
+          towerX: towerScreen.x,
+          towerY: towerScreen.y,
+          targetX: target.x,
+          targetY: target.y,
+          ammoBeforeShot,
+        });
         const refilledAmmo = nextAmmo === 0 ? config.maxAmmo : nextAmmo;
         ammoRef.current[tower.key] = refilledAmmo;
         spawnedBullets.push({
           id: uid(),
-          x: tower.key === "signal" ? towerScreen.x + 22 : towerScreen.x + spawnOffset.x,
-          y: tower.key === "signal" ? towerScreen.y - 22 : towerScreen.y + spawnOffset.y,
-          vx: tower.key === "signal" ? config.speed * 0.72 : (dx / distance) * config.speed,
-          vy: tower.key === "signal" ? config.speed * -0.52 : (dy / distance) * config.speed,
+          x: muzzle.x,
+          y: muzzle.y,
+          vx: muzzle.dirX * config.speed,
+          vy: muzzle.dirY * config.speed,
           damage: config.damage,
           kind,
           age: 0,
