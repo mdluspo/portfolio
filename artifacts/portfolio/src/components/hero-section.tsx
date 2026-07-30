@@ -112,7 +112,7 @@ export function HeroSection() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.42 }}
-        className="pointer-events-auto absolute bottom-6 right-6 z-50 font-display text-xs uppercase tracking-widest text-gray-400 hover:text-black transition-colors"
+        className="pointer-events-auto absolute bottom-6 right-6 z-50 font-display text-base font-black uppercase tracking-widest text-black transition-transform hover:-translate-y-1 hover:text-primary"
       >
         {allPlaced ? "Clear All" : "Skip"}
       </motion.button>

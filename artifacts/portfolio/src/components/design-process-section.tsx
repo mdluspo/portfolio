@@ -1,7 +1,80 @@
 import { motion } from "framer-motion";
 import { LockedSection } from "@/components/locked-section";
 
+const CERTIFICATIONS = [
+  {
+    title: "AI Fluency for Builders",
+    issuer: "Anthropic",
+    issued: "Jul 2026",
+    credentialId: "emzspfaz84u2",
+  },
+  {
+    title: "Claude Code 101",
+    issuer: "Anthropic",
+    issued: "Jul 2026",
+    credentialId: "kr76fisssr7a",
+  },
+  {
+    title: "AI Fluency Framework & Foundations",
+    issuer: "Anthropic",
+    issued: "Jul 2026",
+    credentialId: "brzrkafk438v",
+  },
+  {
+    title: "Learning MATLAB",
+    issuer: "LinkedIn",
+    issued: "Nov 2025",
+  },
+  {
+    title: "Complete Guide to Android Development with Kotlin for Beginners",
+    issuer: "LinkedIn",
+    issued: "Nov 2025",
+  },
+  {
+    title: "Using Git with Visual Studio Code",
+    issuer: "LinkedIn",
+    issued: "Oct 2025",
+  },
+  {
+    title: "CCNA: Introduction to Networks",
+    issuer: "Cisco",
+    issued: "Aug 2025",
+  },
+  {
+    title: "IT Specialist - Python",
+    issuer: "Certiport - A Pearson VUE Business",
+    issued: "Jul 2025",
+    credentialId: "13d6bcf9-57c5-4341-a213-8224a97201ea",
+  },
+  {
+    title: "Advanced Level of Software Engineering",
+    issuer: "Department of Information and Communications Technology - Philippines",
+    issued: "Dec 2024",
+    credentialId: "3899f9fc-7259-9cea-7aeac3476370",
+  },
+  {
+    title: "Intermediate Level of Software Engineering",
+    issuer: "Department of Information and Communications Technology - Philippines",
+    issued: "Dec 2024",
+    credentialId: "17e8758d-c9e4-4204-804c-f7345592b4ed",
+  },
+  {
+    title: "Basic Level of Software Engineering",
+    issuer: "Department of Information and Communications Technology - Philippines",
+    issued: "Dec 2024",
+    credentialId: "096181f8-be15-4f33-9f14-73ea261fa78c",
+  },
+];
+
 export function DesignProcessSection() {
+  const issuerLogo = (issuer: string) => {
+    if (issuer === "Anthropic") return "/anthropic.png";
+    if (issuer === "LinkedIn") return "/linkedin.png";
+    if (issuer === "Cisco") return "/cisco.png";
+    if (issuer.startsWith("Certiport")) return "/certiport.png";
+    return "/dict.png";
+  };
+
   return (
     <LockedSection unlockKey="uiux" title="About Me" towerName="About Me Unit">
       <section id="about" className="py-24 px-4 md:px-8 bg-white relative z-10">
@@ -38,6 +111,50 @@ export function DesignProcessSection() {
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,white_0,white_18%,transparent_19%),linear-gradient(135deg,hsl(208_61%_88%),white)]" />
             </div>
           </motion.div>
+
+          <div className="mt-16">
+            <div className="mb-6 flex items-center gap-4">
+              <h3 className="text-3xl font-display uppercase tracking-wider">
+                Certifications
+              </h3>
+              <div className="h-1 flex-1 rounded-full bg-black" />
+            </div>
+
+            <div className="cert-marquee -mx-4 overflow-hidden px-4 py-1">
+              {[0, 1].map((row) => (
+                <div
+                  key={row}
+                  className={`cert-marquee-row ${row === 1 ? "cert-marquee-row-slow" : ""}`}
+                >
+                  {[...CERTIFICATIONS, ...CERTIFICATIONS].map((cert, index) => (
+                    <div
+                      key={`${row}-${index}-${cert.title}-${cert.issuer}`}
+                      className="group flex min-h-[130px] w-[300px] shrink-0 flex-col rounded-xl border-[3px] border-black bg-white p-3.5 shadow-[4px_4px_0_0_#000] transition-transform duration-200 hover:-translate-y-1"
+                    >
+                      <div className="mb-2.5 flex items-start gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-black bg-white font-display text-sm font-black shadow-[2px_2px_0_0_#000]">
+                          <img
+                            src={issuerLogo(cert.issuer)}
+                            alt=""
+                            className="h-6 w-6 object-contain"
+                            draggable={false}
+                          />
+                        </div>
+                        <p className="min-w-0 truncate font-sans text-xs font-black uppercase tracking-wide text-gray-500">
+                          {cert.issuer}
+                        </p>
+                      </div>
+                      <h4 className="mb-2 text-[17px] font-display leading-tight">{cert.title}</h4>
+                      <p className="mt-auto break-all font-sans text-[10.5px] font-bold text-gray-400">
+                        Issued {cert.issued}
+                        {cert.credentialId ? ` | ID ${cert.credentialId}` : ""}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
     </LockedSection>

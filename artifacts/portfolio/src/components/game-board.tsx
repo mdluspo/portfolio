@@ -379,8 +379,8 @@ export function GameBoard() {
           kind,
           x: base.x,
           y: base.y + (Math.random() * 12 - 6),
-          hp: kind === "boss" ? 80 : kind === "drone" ? 10 : 6,
-          maxHp: kind === "boss" ? 80 : kind === "drone" ? 10 : 6,
+          hp: kind === "boss" ? 120 : kind === "drone" ? 18 : 12,
+          maxHp: kind === "boss" ? 120 : kind === "drone" ? 18 : 12,
           progress: 1,
         };
         nextEnemies = [...nextEnemies, spawn];
@@ -506,10 +506,7 @@ export function GameBoard() {
           };
         })
         .map((bullet) => {
-          const canSteer =
-            bullet.kind === "signal"
-              ? !bullet.returning && (bullet.age ?? 0) >= 0.24
-              : Boolean(bullet.kind) && !bullet.returning && (bullet.age ?? 0) >= 0.08;
+          const canSteer = bullet.kind === "signal" && !bullet.returning && (bullet.age ?? 0) >= 0.24;
 
           if (!canSteer) {
             return bullet;
@@ -527,13 +524,13 @@ export function GameBoard() {
 
           if (!target) return bullet;
 
-          const speed = Math.max(bullet.kind === "signal" ? 520 : 360, Math.hypot(bullet.vx, bullet.vy));
+          const speed = Math.max(520, Math.hypot(bullet.vx, bullet.vy));
           const dx = target.x - bullet.x;
           const dy = target.y - bullet.y;
           const distance = Math.max(1, Math.hypot(dx, dy));
           const desiredVx = (dx / distance) * speed;
           const desiredVy = (dy / distance) * speed;
-          const turn = Math.min(1, dt * (bullet.kind === "signal" ? 6.5 : 3.6));
+          const turn = Math.min(1, dt * 6.5);
 
           return {
             ...bullet,
@@ -760,13 +757,12 @@ export function GameBoard() {
     const onUp = (e: PointerEvent) => {
       const pageWidth = Math.max(document.documentElement.scrollWidth, window.innerWidth);
       const pageHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight);
-      const trayRect = trayRef.current?.getBoundingClientRect();
+      const dropElement = document.elementFromPoint(e.clientX, e.clientY);
       const droppedOnTray = Boolean(
-        trayRect &&
-          e.clientX >= trayRect.left &&
-          e.clientX <= trayRect.right &&
-          e.clientY >= trayRect.top &&
-          e.clientY <= trayRect.bottom,
+        trayRef.current &&
+          dropElement &&
+          trayRef.current.contains(dropElement) &&
+          dropElement.closest("[data-unit-tray-card='true']"),
       );
 
       if (droppedOnTray) {
@@ -971,6 +967,7 @@ export function GameBoard() {
             return (
               <div
                 key={unit.key}
+                data-unit-tray-card="true"
                 onPointerDown={(e) => {
                   if (!isPlaced) startDrag(e, unit.key);
                 }}
