@@ -20,7 +20,7 @@ const SKILL_TREES = [
     title: "Tools",
     icon: Wrench,
     color: "bg-orange-200",
-    skills: ["Git", "VS Code", "Vite", "Webpack", "Vercel"]
+    skills: ["Git", "VS Code", "Vite", "Vercel", "Claude Code", "Cursor"]
   }
 ];
 

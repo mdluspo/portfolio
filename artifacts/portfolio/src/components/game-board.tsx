@@ -1,15 +1,24 @@
-import React, { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { UNITS } from "@/lib/gameData";
 import type { TowerKey } from "@/lib/gameData";
 import { useUnlockState } from "@/lib/unlockState";
 import { cn } from "@/lib/utils";
+import Enemy, { EnemyType } from "@/components/enemy";
+import Bullet, { BulletType } from "@/components/bullet";
 
 type DeployedTower = {
   key: TowerKey;
   x: number;
   y: number;
+};
+
+type AttackCue = {
+  kind: string;
+  ts: number;
+  ammo: number;
+  maxAmmo: number;
 };
 
 type DragState = {
@@ -20,6 +29,17 @@ type DragState = {
   offsetY: number;
 };
 
+type EnemyDragState = {
+  id: string;
+  offsetX: number;
+  offsetY: number;
+  lastX: number;
+  lastY: number;
+  lastTs: number;
+  vx: number;
+  vy: number;
+};
+
 const SECTION_ME_MESSAGES = [
   { id: "about", message: "Oh hey, it's me." },
   { id: "projects", message: "These are the things I've deployed." },
@@ -27,8 +47,126 @@ const SECTION_ME_MESSAGES = [
   { id: "contact", message: "You found the signal. Say hi." },
 ];
 
+const ROAD_SEGMENTS = [
+  { p0: [235, 660], p1: [390, 625], p2: [525, 610], p3: [650, 565] },
+  { p0: [650, 565], p1: [765, 523], p2: [805, 455], p3: [930, 395] },
+  { p0: [930, 395], p1: [1045, 340], p2: [1135, 295], p3: [1240, 190] },
+];
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
+}
+
+function cubic(p0: number[], p1: number[], p2: number[], p3: number[], t: number) {
+  const it = 1 - t;
+  const x = it * it * it * p0[0] + 3 * it * it * t * p1[0] + 3 * it * t * t * p2[0] + t * t * t * p3[0];
+  const y = it * it * it * p0[1] + 3 * it * it * t * p1[1] + 3 * it * t * t * p2[1] + t * t * t * p3[1];
+  return { x, y };
+}
+
+function pointOnPath(s: number) {
+  const segCount = ROAD_SEGMENTS.length;
+  const clamped = Math.max(0, Math.min(1, s));
+  const t = clamped * segCount;
+  const idx = Math.min(Math.floor(t), segCount - 1);
+  const localT = t - idx;
+  const seg = ROAD_SEGMENTS[idx];
+  return cubic(seg.p0, seg.p1, seg.p2, seg.p3, localT);
+}
+
+function pointOnScreenPath(s: number) {
+  const pt = pointOnPath(s);
+  const width = window.innerWidth || 1200;
+  const height = window.innerHeight || 600;
+  const svgLeft = width * -0.08;
+  const svgWidth = width * 1.28;
+  return {
+    x: svgLeft + (pt.x / 1200) * svgWidth,
+    y: (pt.y / 600) * height,
+  };
+}
+
+function nearestRoadPoint(x: number, y: number) {
+  let nearest = { s: 0, x: 0, y: 0, distance: Number.POSITIVE_INFINITY };
+
+  for (let i = 0; i <= 72; i += 1) {
+    const s = i / 72;
+    const pt = pointOnScreenPath(s);
+    const distance = Math.hypot(pt.x - x, pt.y - y);
+    if (distance < nearest.distance) {
+      nearest = { s, x: pt.x, y: pt.y, distance };
+    }
+  }
+
+  return nearest;
+}
+
+function towerAttackConfig(key: TowerKey) {
+  switch (key) {
+    case "frontend":
+      return { maxAmmo: 3, cooldown: 0.72, reload: 0.9, blankReload: 0.22, speed: 620, range: 300, damage: 4 };
+    case "uiux":
+    case "me":
+      return { maxAmmo: 4, cooldown: 0.58, reload: 0.86, blankReload: 0.18, speed: 560, range: 280, damage: 2 };
+    case "techstack":
+      return { maxAmmo: 3, cooldown: 0.78, reload: 0.95, blankReload: 0.22, speed: 500, range: 320, damage: 5 };
+    case "signal":
+      return { maxAmmo: 1, cooldown: 0.2, reload: 1.25, blankReload: 0.18, speed: 680, range: 360, damage: 8 };
+  }
+}
+
+function bulletKindFor(key: TowerKey, ammoBeforeShot: number) {
+  switch (key) {
+    case "frontend":
+      return ammoBeforeShot === 3 ? "token1" : ammoBeforeShot === 2 ? "token2" : "token3";
+    case "techstack":
+      return "disk";
+    case "signal":
+      return "signal";
+    case "uiux":
+      return "paint";
+    case "me":
+      return "none";
+  }
+}
+
+function towerImageFor(key: TowerKey, ammo: number) {
+  if (key === "me") {
+    return "/full_luspo.png";
+  }
+
+  if (key === "techstack") {
+    if (ammo >= 3) return "/layer.png";
+    if (ammo === 2) return "/layer2.png";
+    return "/layer3.png";
+  }
+
+  if (key === "uiux") {
+    if (ammo >= 4) return "/pallete.png";
+    if (ammo === 3) return "/pallete2.png";
+    if (ammo === 2) return "/pallete3.png";
+    return "/pallete4.png";
+  }
+
+  return null;
+}
+
+function bulletSpawnOffset(key: TowerKey, ammoBeforeShot: number) {
+  if (key === "techstack") {
+    return { x: 0, y: ammoBeforeShot === 3 ? -13 : ammoBeforeShot === 2 ? -5 : 4 };
+  }
+
+  if (key === "uiux" || key === "me") {
+    const holes = [
+      { x: 8, y: -13 },
+      { x: 15, y: -2 },
+      { x: 5, y: 10 },
+      { x: -10, y: 5 },
+    ];
+    return holes[Math.max(0, Math.min(holes.length - 1, 4 - ammoBeforeShot))];
+  }
+
+  return { x: 0, y: 0 };
 }
 
 function TowerVisual({
@@ -36,13 +174,30 @@ function TowerVisual({
   meMessage,
   isPreview = false,
   onRemove,
+  shot,
 }: {
   unit: (typeof UNITS)[number];
   meMessage?: string | null;
   isPreview?: boolean;
   onRemove?: (e: React.MouseEvent) => void;
+  shot?: { kind?: string; ts?: number; ammo?: number; maxAmmo?: number } | null;
 }) {
   const Icon = unit.icon;
+  const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+  const elapsed = shot && shot.ts ? Math.max(0, now - shot.ts) : 0;
+  const config = towerAttackConfig(unit.key);
+  const rawAmmo = shot?.ammo ?? config.maxAmmo;
+  const maxAmmo = shot?.maxAmmo ?? config.maxAmmo;
+  const isEmptyReloading = Boolean(shot && rawAmmo === 0 && elapsed < config.blankReload * 1000);
+  const shouldShowSpentState = Boolean(shot && rawAmmo < maxAmmo && (rawAmmo > 0 || isEmptyReloading));
+  const ammo = shouldShowSpentState ? rawAmmo : maxAmmo;
+  const shouldBlankOnReload =
+    (unit.key === "frontend" || unit.key === "techstack") && isEmptyReloading;
+  const isShowingAmmoState = shouldShowSpentState;
+  const shouldReplaceIcon =
+    (unit.key === "frontend" || unit.key === "uiux") && isShowingAmmoState;
+  const towerImage = towerImageFor(unit.key, ammo);
+  const isShotPop = Boolean(shot && elapsed < 180);
 
   return (
     <div className="relative group flex flex-col items-center">
@@ -64,7 +219,45 @@ function TowerVisual({
           unit.color,
         )}
       >
-        <Icon size={34} className="text-black" />
+        <div className="relative w-full h-full flex items-center justify-center">
+          <motion.div
+            animate={{
+              opacity: shouldBlankOnReload ? 0 : 1,
+              scale: shouldBlankOnReload ? 0.7 : isShotPop ? 1.12 : 1,
+              rotate: unit.key === "signal" && isShotPop ? 10 : 0,
+            }}
+            transition={{ type: "spring", stiffness: 520, damping: 24, mass: 0.55 }}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            {towerImage && (
+              <img
+                src={towerImage}
+                alt=""
+                className={cn(unit.key === "me" ? "h-[76px] w-[62px]" : "h-11 w-11", "object-contain")}
+                draggable={false}
+              />
+            )}
+
+            {!towerImage && !shouldReplaceIcon && unit.key !== "frontend" && (
+              <Icon
+                size={34}
+                className="text-black"
+              />
+            )}
+
+            {unit.key === "frontend" && !shouldReplaceIcon && (
+              <div className="font-display text-2xl font-black leading-none">
+                &lt;/&gt;
+              </div>
+            )}
+
+            {unit.key === "frontend" && shouldReplaceIcon && (
+              <div className="font-display text-2xl font-black leading-none">
+                {ammo === 2 ? "/>" : ammo === 1 ? ">" : ""}
+              </div>
+            )}
+          </motion.div>
+        </div>
       </div>
 
       <div className="mt-2 whitespace-nowrap bg-white border-[2px] border-black px-2 py-0.5 rounded-lg text-[10px] font-display font-bold shadow-[1px_1px_0_0_#000]">
@@ -88,10 +281,25 @@ export function GameBoard() {
   const { placed, place, remove } = useUnlockState();
   const [deployedTowers, setDeployedTowers] = useState<Partial<Record<TowerKey, DeployedTower>>>({});
   const [dragging, setDragging] = useState<DragState | null>(null);
+  const [draggingEnemy, setDraggingEnemy] = useState<EnemyDragState | null>(null);
+  const draggingEnemyRef = useRef<EnemyDragState | null>(null);
   const [scrollY, setScrollY] = useState(0);
   const sceneRef = useRef<HTMLDivElement | null>(null);
+  const trayRef = useRef<HTMLDivElement | null>(null);
+  const [enemies, setEnemies] = useState<EnemyType[]>([]);
+  const [bullets, setBullets] = useState<BulletType[]>([]);
+  const [towerShots, setTowerShots] = useState<Partial<Record<TowerKey, AttackCue>>>({});
+  const rafRef = useRef<number | null>(null);
+  const lastRef = useRef<number | null>(null);
+  const spawnRef = useRef(0);
+  const enemiesRef = useRef<EnemyType[]>([]);
+  const bulletsRef = useRef<BulletType[]>([]);
+  const towersRef = useRef<Partial<Record<TowerKey, DeployedTower>>>({});
+  const cooldownRef = useRef<Partial<Record<TowerKey, number>>>({});
+  const ammoRef = useRef<Partial<Record<TowerKey, number>>>({});
 
   useEffect(() => {
+    
     setDeployedTowers((prev) => {
       let changed = false;
       const next = { ...prev };
@@ -112,6 +320,18 @@ export function GameBoard() {
     window.addEventListener("scroll", syncScroll, { passive: true });
     return () => window.removeEventListener("scroll", syncScroll);
   }, []);
+
+  useEffect(() => {
+    enemiesRef.current = enemies;
+  }, [enemies]);
+
+  useEffect(() => {
+    bulletsRef.current = bullets;
+  }, [bullets]);
+
+  useEffect(() => {
+    towersRef.current = deployedTowers;
+  }, [deployedTowers]);
 
   useEffect(() => {
     const defaults: Partial<Record<TowerKey, DeployedTower>> = {
@@ -136,6 +356,248 @@ export function GameBoard() {
     });
   }, [deployedTowers, placed]);
 
+  // spawn and animation loop (movement, bullets, collisions)
+  useEffect(() => {
+    function uid() {
+      return Math.random().toString(36).slice(2, 9);
+    }
+
+    function step(ts: number) {
+      if (!lastRef.current) lastRef.current = ts;
+      const dt = Math.min(100, ts - lastRef.current) / 1000;
+      lastRef.current = ts;
+      let nextEnemies = enemiesRef.current;
+
+      // spawn enemies occasionally (place on path end so they follow the road)
+      spawnRef.current += dt;
+      if (spawnRef.current > 1.8) {
+        spawnRef.current = 0;
+        const kind: EnemyType["kind"] = Math.random() > 0.92 ? "boss" : Math.random() > 0.5 ? "drone" : "bug";
+        const base = pointOnScreenPath(1);
+        const spawn: EnemyType = {
+          id: uid(),
+          kind,
+          x: base.x,
+          y: base.y + (Math.random() * 12 - 6),
+          hp: kind === "boss" ? 80 : kind === "drone" ? 10 : 6,
+          maxHp: kind === "boss" ? 80 : kind === "drone" ? 10 : 6,
+          progress: 1,
+        };
+        nextEnemies = [...nextEnemies, spawn];
+        enemiesRef.current = nextEnemies;
+      }
+
+      // move enemies along the path (progress decreases from 1 -> 0)
+      nextEnemies = nextEnemies
+        .map((e) => {
+          if (e.dragged) return e;
+          if (e.thrown) {
+            return {
+              ...e,
+              x: e.x + (e.vx ?? 0) * dt,
+              y: e.y + (e.vy ?? 0) * dt,
+              vx: (e.vx ?? 0) * 0.96,
+              vy: (e.vy ?? 0) * 0.96 + 40 * dt,
+              opacity: Math.max(0, (e.opacity ?? 1) - dt * 1.35),
+            };
+          }
+
+          const speed = e.kind === "boss" ? 0.055 : e.kind === "drone" ? 0.18 : 0.12;
+          const nextProg = (typeof e.progress === "number" ? e.progress : 1) - speed * dt;
+          const pt = pointOnScreenPath(Math.max(0, Math.min(1, nextProg)));
+          return { ...e, progress: nextProg, x: pt.x, y: pt.y } as EnemyType & { progress: number };
+        })
+        .filter((e) => {
+          if (e.thrown) return (e.opacity ?? 1) > 0;
+          return typeof e.progress === "number" ? e.progress > -0.05 : true;
+        });
+      enemiesRef.current = nextEnemies;
+
+      const spawnedBullets: BulletType[] = [];
+      const shotUpdates: Partial<Record<TowerKey, AttackCue>> = {};
+      Object.values(towersRef.current).forEach((tower) => {
+        if (!tower) return;
+        if (tower.key === "me") return;
+        cooldownRef.current[tower.key] = Math.max(0, (cooldownRef.current[tower.key] ?? 0) - dt);
+        if ((cooldownRef.current[tower.key] ?? 0) > 0) return;
+
+        const config = towerAttackConfig(tower.key);
+        let ammoBeforeShot = ammoRef.current[tower.key] ?? config.maxAmmo;
+
+        if (ammoBeforeShot <= 0) {
+          ammoBeforeShot = config.maxAmmo;
+          ammoRef.current[tower.key] = ammoBeforeShot;
+          shotUpdates[tower.key] = {
+            kind: "reload",
+            ts,
+            ammo: config.maxAmmo,
+            maxAmmo: config.maxAmmo,
+          };
+        }
+
+        const towerScreen = { x: tower.x, y: tower.y - window.scrollY };
+        const target = nextEnemies
+          .filter((enemy) => enemy.hp > 0)
+          .map((enemy) => ({
+            enemy,
+            distance: Math.hypot(enemy.x - towerScreen.x, enemy.y - towerScreen.y),
+          }))
+          .filter(({ distance }) => distance <= config.range)
+          .sort((a, b) => (a.enemy.progress ?? 0) - (b.enemy.progress ?? 0))[0]?.enemy;
+
+        if (!target) return;
+
+        const dx = target.x - towerScreen.x;
+        const dy = target.y - towerScreen.y;
+        const distance = Math.max(1, Math.hypot(dx, dy));
+        const kind = bulletKindFor(tower.key, ammoBeforeShot);
+        const nextAmmo = Math.max(0, ammoBeforeShot - 1);
+        const spawnOffset = bulletSpawnOffset(tower.key, ammoBeforeShot);
+        const refilledAmmo = nextAmmo === 0 ? config.maxAmmo : nextAmmo;
+        ammoRef.current[tower.key] = refilledAmmo;
+        spawnedBullets.push({
+          id: uid(),
+          x: tower.key === "signal" ? towerScreen.x + 22 : towerScreen.x + spawnOffset.x,
+          y: tower.key === "signal" ? towerScreen.y - 22 : towerScreen.y + spawnOffset.y,
+          vx: tower.key === "signal" ? config.speed * 0.72 : (dx / distance) * config.speed,
+          vy: tower.key === "signal" ? config.speed * -0.52 : (dy / distance) * config.speed,
+          damage: config.damage,
+          kind,
+          age: 0,
+          originX: towerScreen.x,
+          originY: towerScreen.y,
+          targetId: target.id,
+        });
+        cooldownRef.current[tower.key] = nextAmmo === 0 ? config.reload : config.cooldown;
+        shotUpdates[tower.key] = { kind, ts, ammo: nextAmmo, maxAmmo: config.maxAmmo };
+      });
+
+      if (spawnedBullets.length > 0) {
+        bulletsRef.current = [...bulletsRef.current, ...spawnedBullets];
+        setTowerShots((prev) => ({ ...prev, ...shotUpdates }));
+      }
+
+      const moved = bulletsRef.current
+        .map((bullet) => {
+          if (bullet.returning && typeof bullet.originX === "number" && typeof bullet.originY === "number") {
+            const speed = Math.max(420, Math.hypot(bullet.vx, bullet.vy));
+            const dx = bullet.originX - bullet.x;
+            const dy = bullet.originY - bullet.y;
+            const distance = Math.max(1, Math.hypot(dx, dy));
+            const desiredVx = (dx / distance) * speed;
+            const desiredVy = (dy / distance) * speed;
+            const turn = Math.min(1, dt * 5.2);
+            const vx = bullet.vx + (desiredVx - bullet.vx) * turn;
+            const vy = bullet.vy + (desiredVy - bullet.vy) * turn;
+            return {
+              ...bullet,
+              vx,
+              vy,
+              x: bullet.x + vx * dt,
+              y: bullet.y + vy * dt,
+            };
+          }
+
+          return {
+            ...bullet,
+            age: (bullet.age ?? 0) + dt,
+            x: bullet.x + bullet.vx * dt,
+            y: bullet.y + bullet.vy * dt,
+          };
+        })
+        .map((bullet) => {
+          const canSteer =
+            bullet.kind === "signal"
+              ? !bullet.returning && (bullet.age ?? 0) >= 0.24
+              : Boolean(bullet.kind) && !bullet.returning && (bullet.age ?? 0) >= 0.08;
+
+          if (!canSteer) {
+            return bullet;
+          }
+
+          const target =
+            nextEnemies.find((enemy) => enemy.id === bullet.targetId && enemy.hp > 0) ??
+            nextEnemies
+              .filter((enemy) => enemy.hp > 0)
+              .map((enemy) => ({
+                enemy,
+                distance: Math.hypot(enemy.x - bullet.x, enemy.y - bullet.y),
+              }))
+              .sort((a, b) => a.distance - b.distance)[0]?.enemy;
+
+          if (!target) return bullet;
+
+          const speed = Math.max(bullet.kind === "signal" ? 520 : 360, Math.hypot(bullet.vx, bullet.vy));
+          const dx = target.x - bullet.x;
+          const dy = target.y - bullet.y;
+          const distance = Math.max(1, Math.hypot(dx, dy));
+          const desiredVx = (dx / distance) * speed;
+          const desiredVy = (dy / distance) * speed;
+          const turn = Math.min(1, dt * (bullet.kind === "signal" ? 6.5 : 3.6));
+
+          return {
+            ...bullet,
+            vx: bullet.vx + (desiredVx - bullet.vx) * turn,
+            vy: bullet.vy + (desiredVy - bullet.vy) * turn,
+          };
+        })
+        .filter((bullet) => {
+          if (bullet.returning && typeof bullet.originX === "number" && typeof bullet.originY === "number") {
+            return Math.hypot(bullet.originX - bullet.x, bullet.originY - bullet.y) > 14;
+          }
+
+          return bullet.x > -80 && bullet.x < window.innerWidth + 80 && bullet.y > -80 && bullet.y < window.innerHeight + 80;
+        });
+
+      const remaining: BulletType[] = [];
+      const damageByEnemy = new Map<string, number>();
+
+      moved.forEach((bullet) => {
+        if (bullet.returning) {
+          remaining.push(bullet);
+          return;
+        }
+
+        const hit = nextEnemies.find((enemy) => {
+          const radius = enemy.kind === "boss" ? 58 : 38;
+          return enemy.hp > 0 && Math.hypot(enemy.x - bullet.x, enemy.y - bullet.y) <= radius;
+        });
+        if (hit) {
+          damageByEnemy.set(hit.id, (damageByEnemy.get(hit.id) ?? 0) + bullet.damage);
+          if (bullet.kind === "signal") {
+            remaining.push({ ...bullet, damage: 0, returning: true });
+          }
+        } else {
+          remaining.push(bullet);
+        }
+      });
+
+      if (damageByEnemy.size > 0) {
+        nextEnemies = nextEnemies
+          .map((enemy) => ({
+            ...enemy,
+            hp: enemy.hp - (damageByEnemy.get(enemy.id) ?? 0),
+          }))
+          .filter((enemy) => enemy.hp > 0);
+        enemiesRef.current = nextEnemies;
+      }
+
+      bulletsRef.current = remaining;
+      setBullets(remaining);
+
+      setEnemies(nextEnemies);
+
+      rafRef.current = requestAnimationFrame(step);
+    }
+
+    rafRef.current = requestAnimationFrame(step);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+      lastRef.current = null;
+    };
+  }, []);
+
   const startDrag = (e: React.PointerEvent, key: TowerKey) => {
     if (e.button !== 0) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -148,10 +610,148 @@ export function GameBoard() {
     });
   };
 
+  const startEnemyDrag = (e: React.PointerEvent, enemy: EnemyType) => {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    e.preventDefault();
+    const now = performance.now();
+    setDraggingEnemy({
+      id: enemy.id,
+      offsetX: e.clientX - enemy.x,
+      offsetY: e.clientY - enemy.y,
+      lastX: e.clientX,
+      lastY: e.clientY,
+      lastTs: now,
+      vx: 0,
+      vy: 0,
+    });
+    draggingEnemyRef.current = {
+      id: enemy.id,
+      offsetX: e.clientX - enemy.x,
+      offsetY: e.clientY - enemy.y,
+      lastX: e.clientX,
+      lastY: e.clientY,
+      lastTs: now,
+      vx: 0,
+      vy: 0,
+    };
+    setEnemies((current) => {
+      const next = current.map((item) =>
+        item.id === enemy.id
+          ? { ...item, dragged: true, thrown: false, vx: 0, vy: 0, opacity: 1 }
+          : item,
+      );
+      enemiesRef.current = next;
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    if (!draggingEnemy) return;
+
+    const onMove = (e: PointerEvent) => {
+      const now = performance.now();
+      const current = draggingEnemyRef.current;
+      if (!current) return;
+
+      const dt = Math.max(16, now - current.lastTs) / 1000;
+      const x = e.clientX - current.offsetX;
+      const y = e.clientY - current.offsetY;
+      const vx = (e.clientX - current.lastX) / dt;
+      const vy = (e.clientY - current.lastY) / dt;
+
+      const nextDrag = {
+        ...current,
+        lastX: e.clientX,
+        lastY: e.clientY,
+        lastTs: now,
+        vx,
+        vy,
+      };
+      draggingEnemyRef.current = nextDrag;
+
+      setEnemies((items) => {
+        const next = items.map((enemy) =>
+          enemy.id === current.id ? { ...enemy, x, y, dragged: true, thrown: false, opacity: 1 } : enemy,
+        );
+        enemiesRef.current = next;
+        return next;
+      });
+    };
+
+    const onUp = () => {
+      const current = draggingEnemyRef.current;
+      if (!current) {
+        setDraggingEnemy(null);
+        return;
+      }
+
+        const enemy = enemiesRef.current.find((item) => item.id === current.id);
+      if (!enemy) {
+        draggingEnemyRef.current = null;
+        setDraggingEnemy(null);
+        return;
+      }
+
+        const nearest = nearestRoadPoint(enemy.x, enemy.y);
+        const shouldThrow = nearest.distance > 70;
+
+        setEnemies((items) => {
+          const next = items.map((item) => {
+            if (item.id !== current.id) return item;
+            if (shouldThrow) {
+              return {
+                ...item,
+                dragged: false,
+                thrown: true,
+                vx: current.vx,
+                vy: current.vy,
+                opacity: 1,
+              };
+            }
+
+            return {
+              ...item,
+              dragged: false,
+              thrown: false,
+              vx: 0,
+              vy: 0,
+              opacity: 1,
+              progress: nearest.s,
+              x: nearest.x,
+              y: nearest.y,
+            };
+          });
+          enemiesRef.current = next;
+          return next;
+        });
+
+      draggingEnemyRef.current = null;
+      setDraggingEnemy(null);
+    };
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp, { once: true });
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+  }, [draggingEnemy]);
+
   useEffect(() => {
     if (!dragging) return;
 
     const onMove = (e: PointerEvent) => {
+      const edge = 86;
+      const maxScrollSpeed = 18;
+      if (e.clientY > window.innerHeight - edge) {
+        const strength = (e.clientY - (window.innerHeight - edge)) / edge;
+        window.scrollBy({ top: Math.ceil(strength * maxScrollSpeed), behavior: "auto" });
+      } else if (e.clientY < edge) {
+        const strength = (edge - e.clientY) / edge;
+        window.scrollBy({ top: -Math.ceil(strength * maxScrollSpeed), behavior: "auto" });
+      }
+
       setDragging((current) =>
         current ? { ...current, x: e.clientX, y: e.clientY } : current,
       );
@@ -160,6 +760,25 @@ export function GameBoard() {
     const onUp = (e: PointerEvent) => {
       const pageWidth = Math.max(document.documentElement.scrollWidth, window.innerWidth);
       const pageHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight);
+      const trayRect = trayRef.current?.getBoundingClientRect();
+      const droppedOnTray = Boolean(
+        trayRect &&
+          e.clientX >= trayRect.left &&
+          e.clientX <= trayRect.right &&
+          e.clientY >= trayRect.top &&
+          e.clientY <= trayRect.bottom,
+      );
+
+      if (droppedOnTray) {
+        setDeployedTowers((prev) => {
+          const next = { ...prev };
+          delete next[dragging.key];
+          return next;
+        });
+        remove(dragging.key);
+        setDragging(null);
+        return;
+      }
 
       const deployed = Object.values(deployedTowers).filter(
         (tower): tower is DeployedTower => Boolean(tower),
@@ -220,7 +839,7 @@ export function GameBoard() {
   const allOthers = (["uiux", "frontend", "techstack", "signal"] as TowerKey[]).every((k) =>
     placed.has(k),
   );
-  const getMeMessage = () => {
+  const meMessage = useMemo(() => {
     const meTower = deployedTowers.me;
     if (meTower) {
       const sectionMessage = SECTION_ME_MESSAGES.find(({ id }) => {
@@ -237,13 +856,12 @@ export function GameBoard() {
     if (allOthers) return "You've unlocked everything - scroll down to explore!";
     if (mePlaced) return "Deploy units to unlock portfolio sections.";
     return "Hi! Drag the units anywhere on the board. Each one reveals a section of my portfolio.";
-  };
-  const meMessage = getMeMessage();
+  }, [allOthers, deployedTowers.me, mePlaced, scrollY]);
   const draggingUnit = dragging ? UNITS.find((unit) => unit.key === dragging.key) : null;
 
   return (
-    <div className="absolute left-0 top-0 min-h-screen w-full select-none bg-white">
-      <div ref={sceneRef} className="absolute left-0 top-0 h-screen w-full overflow-x-hidden overflow-y-visible bg-white">
+    <div className="absolute left-0 top-0 h-[100dvh] w-full select-none overflow-hidden bg-white">
+      <div ref={sceneRef} className="absolute left-0 top-0 h-full w-full overflow-hidden bg-white">
         <svg
           viewBox="0 0 1200 600"
           className="absolute inset-y-0 -left-[8vw] h-full w-[128vw] pointer-events-none"
@@ -291,52 +909,57 @@ export function GameBoard() {
         </svg>
       </div>
 
-      <AnimatePresence>
-        {Object.values(deployedTowers)
-          .filter((tower): tower is DeployedTower => Boolean(tower))
-          .map((tower) => {
-            const unit = UNITS.find((u) => u.key === tower.key);
-            if (!unit) return null;
+      {/* render enemies */}
+      {enemies.map((en) => (
+        <Enemy key={en.id} enemy={en} onPointerDown={startEnemyDrag} />
+      ))}
 
-            return (
-              <motion.div
-                key={tower.key}
-                initial={{ scale: 0, rotate: -8, y: 12 }}
-                animate={{
-                  scale: dragging?.key === tower.key ? 0.98 : 1,
-                  rotate: 0,
-                  y: 0,
-                  opacity: dragging?.key === tower.key ? 0 : 1,
-                }}
-                exit={{ scale: 0, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 18 }}
-                className="fixed z-40 -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing"
-                style={{ left: tower.x, top: tower.y - scrollY }}
-                onPointerDown={(e) => startDrag(e, unit.key)}
-              >
-                <TowerVisual
-                  unit={unit}
-                  meMessage={unit.key === "me" ? meMessage : null}
-                  onRemove={(e) => handleRemove(e, unit.key)}
-                />
-              </motion.div>
-            );
-          })}
-      </AnimatePresence>
+      {bullets.map((bullet) => (
+        <Bullet key={bullet.id} b={bullet} />
+      ))}
+
+      {Object.values(deployedTowers)
+        .filter((tower): tower is DeployedTower => Boolean(tower))
+        .map((tower) => {
+          const unit = UNITS.find((u) => u.key === tower.key);
+          if (!unit) return null;
+
+          return (
+            <div
+              key={tower.key}
+              className="fixed left-0 top-0 z-40 cursor-grab active:cursor-grabbing"
+              style={{
+                opacity: dragging?.key === tower.key ? 0 : 1,
+                transform: `translate3d(${tower.x}px, ${tower.y - scrollY}px, 0) translate(-50%, -50%) scale(${
+                  dragging?.key === tower.key ? 0.98 : 1
+                })`,
+                willChange: "transform, opacity",
+              }}
+              onPointerDown={(e) => startDrag(e, unit.key)}
+            >
+              <TowerVisual
+                unit={unit}
+                meMessage={unit.key === "me" ? meMessage : null}
+                onRemove={(e) => handleRemove(e, unit.key)}
+                shot={towerShots[tower.key]}
+              />
+            </div>
+          );
+        })}
 
       {dragging && draggingUnit && (
         <div
-          className="fixed z-[100] pointer-events-none"
+          className="fixed left-0 top-0 z-[100] pointer-events-none"
           style={{
-            left: dragging.x - dragging.offsetX,
-            top: dragging.y - dragging.offsetY,
+            transform: `translate3d(${dragging.x - dragging.offsetX}px, ${dragging.y - dragging.offsetY}px, 0)`,
+            willChange: "transform",
           }}
         >
           <TowerVisual unit={draggingUnit} isPreview />
         </div>
       )}
 
-      <div className="absolute bottom-5 left-1/2 z-30 w-full -translate-x-1/2 bg-transparent px-3 py-3">
+      <div ref={trayRef} className="absolute bottom-5 left-1/2 z-30 w-full -translate-x-1/2 bg-transparent px-3 py-3">
         <p className="text-center font-display text-[10px] uppercase tracking-widest text-gray-400 mb-2">
           Drag a unit anywhere
         </p>
@@ -344,6 +967,7 @@ export function GameBoard() {
           {UNITS.map((unit) => {
             const isPlaced = placed.has(unit.key);
             const Icon = unit.icon;
+            const trayImage = towerImageFor(unit.key, towerAttackConfig(unit.key).maxAmmo);
             return (
               <div
                 key={unit.key}
@@ -363,7 +987,11 @@ export function GameBoard() {
                     unit.color,
                   )}
                 >
-                  <Icon size={20} className="text-black" />
+                  {trayImage ? (
+                    <img src={trayImage} alt="" className="h-6 w-6 object-contain" draggable={false} />
+                  ) : (
+                    <Icon size={20} className="text-black" />
+                  )}
                 </div>
                 <div className="w-full px-1">
                   <div className="font-display font-bold text-[11px] leading-[1.05]">{unit.name}</div>
