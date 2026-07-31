@@ -327,6 +327,8 @@ export function GameBoard() {
   const [scrollY, setScrollY] = useState(0);
   const sceneRef = useRef<HTMLDivElement | null>(null);
   const trayRef = useRef<HTMLDivElement | null>(null);
+  const dragPointerYRef = useRef(0);
+  const dragAutoScrollRafRef = useRef<number | null>(null);
   const [enemies, setEnemies] = useState<EnemyType[]>([]);
   const [bullets, setBullets] = useState<BulletType[]>([]);
   const [towerShots, setTowerShots] = useState<Partial<Record<TowerKey, AttackCue>>>({});
@@ -783,16 +785,40 @@ export function GameBoard() {
   useEffect(() => {
     if (!dragging) return;
 
-    const onMove = (e: PointerEvent) => {
-      const edge = 86;
-      const maxScrollSpeed = 18;
-      if (e.clientY > window.innerHeight - edge) {
-        const strength = (e.clientY - (window.innerHeight - edge)) / edge;
-        window.scrollBy({ top: Math.ceil(strength * maxScrollSpeed), behavior: "auto" });
-      } else if (e.clientY < edge) {
-        const strength = (edge - e.clientY) / edge;
-        window.scrollBy({ top: -Math.ceil(strength * maxScrollSpeed), behavior: "auto" });
+    dragPointerYRef.current = dragging.y;
+
+    const stopAutoScroll = () => {
+      if (dragAutoScrollRafRef.current) {
+        cancelAnimationFrame(dragAutoScrollRafRef.current);
+        dragAutoScrollRafRef.current = null;
       }
+    };
+
+    const autoScroll = () => {
+      const edge = Math.min(140, Math.max(92, window.innerHeight * 0.16));
+      const maxScrollSpeed = 24;
+      const pointerY = dragPointerYRef.current;
+      let scrollDelta = 0;
+
+      if (pointerY > window.innerHeight - edge) {
+        const strength = (pointerY - (window.innerHeight - edge)) / edge;
+        scrollDelta = Math.ceil(strength * strength * maxScrollSpeed);
+      } else if (pointerY < edge) {
+        const strength = (edge - pointerY) / edge;
+        scrollDelta = -Math.ceil(strength * strength * maxScrollSpeed);
+      }
+
+      if (scrollDelta !== 0) {
+        window.scrollBy({ top: scrollDelta, behavior: "auto" });
+      }
+
+      dragAutoScrollRafRef.current = requestAnimationFrame(autoScroll);
+    };
+
+    dragAutoScrollRafRef.current = requestAnimationFrame(autoScroll);
+
+    const onMove = (e: PointerEvent) => {
+      dragPointerYRef.current = e.clientY;
 
       setDragging((current) =>
         current ? { ...current, x: e.clientX, y: e.clientY } : current,
@@ -818,6 +844,7 @@ export function GameBoard() {
         });
         remove(dragging.key);
         setDragging(null);
+        stopAutoScroll();
         return;
       }
 
@@ -856,11 +883,13 @@ export function GameBoard() {
 
       if (!placed.has(dragging.key)) place(dragging.key);
       setDragging(null);
+      stopAutoScroll();
     };
 
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp, { once: true });
     return () => {
+      stopAutoScroll();
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
     };

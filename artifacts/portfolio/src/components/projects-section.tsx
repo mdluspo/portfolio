@@ -9,23 +9,29 @@ const PROJECTS = [
   {
     id: 1,
     title: "ArrowKopo",
-    description: "Featured project placeholder for ArrowKopo. Add the final case-study summary here.",
-    tags: ["React", "UI", "Motion"],
+    description: "Featured project placeholder for ArrowKopo.",
+    tags: ["Tools", "Tools", "Tools"],
     color: "project-channel-blue",
+    logo: "/AKP.png",
+    href: "https://arrowkopo.vercel.app",
   },
   {
     id: 2,
     title: "ELife",
-    description: "Featured project placeholder for ELife. Add the final project details here.",
-    tags: ["TypeScript", "Tools", "UX"],
+    description: "Featured project placeholder for ELife.",
+    tags: ["Tools", "Tools", "Tools"],
     color: "project-channel-green",
+    logo: "/e_life.png",
+    logoClassName: "project-channel-logo-elife",
+    href: "https://elife-egovph.vercel.app",
   },
   {
     id: 3,
     title: "Parity",
-    description: "Featured project placeholder for Parity. Add the final product story here.",
-    tags: ["Design", "Frontend", "Polish"],
+    description: "Featured project placeholder for Parity.",
+    tags: ["Tools", "Tools", "Tools"],
     color: "project-channel-yellow",
+    href: "#",
   },
 ];
 
@@ -33,8 +39,8 @@ const TILE_STEP = 118;
 const LOOP_WIDTH = PROJECTS.length * TILE_STEP;
 const MIDDLE_REPEAT = 3;
 const TRACK_START = MIDDLE_REPEAT * LOOP_WIDTH + 52;
-const HOLD_MS = 1700;
-const SWAP_MS = 560;
+const HOLD_MS = 4300;
+const SWAP_MS = 760;
 
 function easeInOutCubic(t: number) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -59,6 +65,7 @@ export function ProjectsSection() {
   } | null>(null);
   const selectedIndexRef = useRef(0);
   const dragRef = useRef<{ x: number; offset: number } | null>(null);
+  const didDragRef = useRef(false);
   const repeatedProjects = useMemo(
     () => Array.from({ length: 7 }, (_, repeat) => PROJECTS.map((project) => ({ ...project, repeat }))).flat(),
     [],
@@ -121,18 +128,21 @@ export function ProjectsSection() {
 
         if (progress >= 1) {
           if (phase.mode === "hold") {
-            const from = targetIndexRef.current * TILE_STEP;
-            const nextIndex = targetIndexRef.current + 1;
-            targetIndexRef.current = nextIndex;
+            const from = offsetRef.current;
+            const to = from + TILE_STEP;
+            targetIndexRef.current = Math.round(positiveModulo(to, LOOP_WIDTH) / TILE_STEP) % PROJECTS.length;
             phaseRef.current = {
               mode: "swap",
               start: time,
               from,
-              to: nextIndex * TILE_STEP,
+              to,
             };
           } else {
-            offsetRef.current = positiveModulo(phase.to, LOOP_WIDTH);
-            targetIndexRef.current = Math.round(offsetRef.current / TILE_STEP) % PROJECTS.length;
+            offsetRef.current = phase.to;
+            targetIndexRef.current = Math.round(positiveModulo(offsetRef.current, LOOP_WIDTH) / TILE_STEP) % PROJECTS.length;
+            if (offsetRef.current >= LOOP_WIDTH) {
+              offsetRef.current = positiveModulo(offsetRef.current, LOOP_WIDTH);
+            }
             phaseRef.current = {
               mode: "hold",
               start: time,
@@ -162,6 +172,7 @@ export function ProjectsSection() {
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = { x: event.clientX, offset: offsetRef.current };
+    didDragRef.current = false;
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -169,6 +180,9 @@ export function ProjectsSection() {
     if (!drag) return;
 
     const delta = drag.x - event.clientX;
+    if (Math.abs(delta) > 6) {
+      didDragRef.current = true;
+    }
     offsetRef.current = positiveModulo(drag.offset + delta, LOOP_WIDTH);
     velocityRef.current = Math.min(1.1, Math.max(-1.1, delta * 0.006));
     phaseRef.current = null;
@@ -201,11 +215,16 @@ export function ProjectsSection() {
               <h3>{selectedProject.title}</h3>
               <p>{selectedProject.description}</p>
               <div className="project-preview-tags">
-                {selectedProject.tags.map((tag) => (
-                  <Badge key={tag}>{tag}</Badge>
+                {selectedProject.tags.map((tag, index) => (
+                  <Badge key={`${tag}-${index}`}>{tag}</Badge>
                 ))}
               </div>
-              <a href="#" onClick={(event) => event.preventDefault()}>
+              <a
+                href={selectedProject.href}
+                target={selectedProject.href === "#" ? undefined : "_blank"}
+                rel={selectedProject.href === "#" ? undefined : "noreferrer"}
+                onClick={selectedProject.href === "#" ? (event) => event.preventDefault() : undefined}
+              >
                 View Project
                 <ExternalLink size={16} strokeWidth={3} />
               </a>
@@ -237,21 +256,41 @@ export function ProjectsSection() {
                   key={`${project.repeat}-${project.id}`}
                   type="button"
                   className={cn("project-channel-tile", project.color)}
-                  onClick={() => {
-                    offsetRef.current = project.id - 1 === selectedIndex ? offsetRef.current : (project.id - 1) * TILE_STEP;
+                  draggable={false}
+                  onPointerDown={(event) => {
+                    event.stopPropagation();
+                    didDragRef.current = false;
+                  }}
+                  onDragStart={(event) => event.preventDefault()}
+                  onClick={(event) => {
+                    if (didDragRef.current) {
+                      event.preventDefault();
+                      didDragRef.current = false;
+                      return;
+                    }
+
+                    const projectIndex = project.id - 1;
+                    const viewportCenter = window.innerWidth / 2;
+                    const tileRect = event.currentTarget.getBoundingClientRect();
+                    const tileCenter = tileRect.left + tileRect.width / 2;
+                    const target = offsetRef.current + (tileCenter - viewportCenter);
                     velocityRef.current = 0;
-                    targetIndexRef.current = project.id - 1;
+                    targetIndexRef.current = projectIndex;
                     phaseRef.current = {
-                      mode: "hold",
+                      mode: "swap",
                       start: performance.now(),
                       from: offsetRef.current,
-                      to: offsetRef.current,
+                      to: target,
                     };
                   }}
                   aria-label={`Select ${project.title}`}
                 >
                   <span className="project-channel-image">
-                    <Gamepad2 size={26} strokeWidth={2.5} />
+                    {project.logo ? (
+                      <img src={project.logo} alt="" draggable={false} className={project.logoClassName} />
+                    ) : (
+                      <Gamepad2 size={26} strokeWidth={2.5} />
+                    )}
                   </span>
                 </button>
               ))}
