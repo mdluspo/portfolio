@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { LockedSection } from "@/components/locked-section";
 
 const CERTIFICATIONS = [
@@ -67,6 +68,8 @@ const CERTIFICATIONS = [
 ];
 
 export function DesignProcessSection() {
+  const [isDoomOpen, setIsDoomOpen] = useState(false);
+
   const issuerLogo = (issuer: string) => {
     if (issuer === "Anthropic") return "/anthropic.png";
     if (issuer === "LinkedIn") return "/linkedin.png";
@@ -90,7 +93,7 @@ export function DesignProcessSection() {
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-10 items-center"
+            className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-10 items-start"
           >
             <div className="space-y-6">
               <p className="text-xl md:text-2xl font-sans font-bold leading-relaxed text-gray-800">
@@ -107,10 +110,49 @@ export function DesignProcessSection() {
               </p>
             </div>
 
-            <div className="relative mx-auto w-full max-w-[320px] aspect-[4/5] rounded-3xl border-[3px] border-black bg-primary/15 shadow-[8px_8px_0_0_#000] overflow-hidden">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,white_0,white_18%,transparent_19%),linear-gradient(135deg,hsl(208_61%_88%),white)]" />
+            <div className="mx-auto flex w-full max-w-[280px] flex-col items-center gap-4">
+              <div className="relative w-full aspect-[4/5] rounded-2xl border-[3px] border-black bg-primary/15 shadow-[6px_6px_0_0_#000] overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,white_0,white_18%,transparent_19%),linear-gradient(135deg,hsl(208_61%_88%),white)]" />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsDoomOpen(true)}
+                className="border-cartoon bg-secondary px-7 py-3 rounded-lg font-display text-base font-black uppercase shadow-cartoon transition-transform hover:-translate-y-1"
+              >
+                Press Me
+              </button>
             </div>
           </motion.div>
+
+          {isDoomOpen && (
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96, y: 16 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                className="flex h-[82vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border-[3px] border-black bg-black shadow-[8px_8px_0_0_#000]"
+              >
+                <div className="flex items-center justify-between border-b-[3px] border-black bg-secondary px-4 py-3">
+                  <span className="font-display text-sm font-black uppercase tracking-widest">
+                    DOOM II
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsDoomOpen(false)}
+                    className="rounded-lg border-[2px] border-black bg-white px-3 py-1 font-display text-xs font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5"
+                  >
+                    Close
+                  </button>
+                </div>
+                <iframe
+                  title="DOOM II"
+                  src="/doom/doom.html"
+                  className="h-full w-full border-0"
+                  allow="fullscreen; gamepad"
+                />
+              </motion.div>
+            </div>
+          )}
 
           <div className="mt-16">
             <div className="mb-6 flex items-center gap-4">
