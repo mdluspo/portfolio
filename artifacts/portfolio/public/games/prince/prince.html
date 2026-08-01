@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prince of Persia</title>
+    <style>
+      html,
+      body,
+      #dos,
+      canvas {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #050505;
+      }
+
+      canvas {
+        display: block;
+        image-rendering: pixelated;
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="dos" tabindex="0"></canvas>
+    <script src="https://v8.js-dos.com/v6.22/js-dos.js"></script>
+    <script>
+      Dos(document.getElementById("dos"), {
+        wdosboxUrl: "https://v8.js-dos.com/v6.22/dosbox.js",
+      }).ready((fs, main) => {
+        fs.extract(`/games/prince/prince.jsdos?v=${Date.now()}`).then(() => {
+          main(["-conf", ".jsdos/dosbox.conf"]);
+          setTimeout(() => {
+            const canvas = document.getElementById("dos");
+            canvas.focus();
+            const command = "PRINCE.EXE\r";
+            for (const char of command) {
+              const key = char === "\r" ? "Enter" : char;
+              const code = char === "\r" ? "Enter" : `Key${char.toUpperCase()}`;
+              const keyCode = char === "\r" ? 13 : char.toUpperCase().charCodeAt(0);
+              const eventInit = {
+                key,
+                code,
+                keyCode,
+                which: keyCode,
+                bubbles: true,
+                cancelable: true,
+              };
+              [canvas, document, window].forEach((target) => {
+                target.dispatchEvent(new KeyboardEvent("keydown", eventInit));
+                target.dispatchEvent(new KeyboardEvent("keypress", eventInit));
+                target.dispatchEvent(new KeyboardEvent("keyup", eventInit));
+              });
+            }
+          }, 2200);
+        });
+      });
+    </script>
+  </body>
+</html>
