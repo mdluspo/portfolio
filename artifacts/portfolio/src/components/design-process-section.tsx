@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
+import { createPortal } from "react-dom";
 import { LockedSection } from "@/components/locked-section";
 
 const CERTIFICATIONS = [
@@ -67,8 +69,112 @@ const CERTIFICATIONS = [
   },
 ];
 
+type GameId = "doom" | "prince";
+
+const GAMES: Array<{
+  id: GameId;
+  title: string;
+  meta: string;
+  status: string;
+  src: string;
+  accent: string;
+  controls: string[];
+}> = [
+  {
+    id: "doom",
+    title: "DOOM II",
+    meta: "FPS / WAD / 1994",
+    status: "READY",
+    src: "/doom/doom.html?v=4",
+    accent: "bg-[#ffcf33]",
+    controls: ["Arrows / WASD: move", "Ctrl / Space: fire", "Shift: run", "Enter: select", "Esc: menu"],
+  },
+  {
+    id: "prince",
+    title: "PRINCE.EXE",
+    meta: "PLATFORM / DOS / 1989",
+    status: "READY",
+    src: "/games/princejs/index.html?v=10",
+    accent: "bg-[#8fe3ff]",
+    controls: ["A / D: move", "W: jump / climb", "S: crouch / climb down", "J / K: action, grab, strike", "Arrows + Shift also work"],
+  },
+];
+
 export function DesignProcessSection() {
-  const [isDoomOpen, setIsDoomOpen] = useState(false);
+  const [isGameWindowOpen, setIsGameWindowOpen] = useState(false);
+  const [isGameWindowMinimized, setIsGameWindowMinimized] = useState(false);
+  const [isGameWindowFullscreen, setIsGameWindowFullscreen] = useState(false);
+  const [activeGame, setActiveGame] = useState<GameId | null>(null);
+  const [gameSessionId, setGameSessionId] = useState(0);
+  const [showGameControls, setShowGameControls] = useState(false);
+  const gameWindowRef = useRef<HTMLDivElement | null>(null);
+  const gameFrameRef = useRef<HTMLIFrameElement | null>(null);
+  const [gameWindowPosition, setGameWindowPosition] = useState<{ left: number; top: number } | null>(null);
+  const [gameWindowDrag, setGameWindowDrag] = useState<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    originLeft: number;
+    originTop: number;
+  } | null>(null);
+  const canUsePortal = typeof document !== "undefined";
+  const selectedGame = GAMES.find((game) => game.id === activeGame);
+
+  useEffect(() => {
+    if (!isGameWindowOpen) return;
+
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+    };
+  }, [isGameWindowOpen]);
+
+  const startGameWindowDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0 || isGameWindowFullscreen) return;
+    const target = event.target as HTMLElement;
+    if (target.closest("button")) return;
+
+    const rect = gameWindowRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    if (!gameWindowPosition) {
+      setGameWindowPosition({ left: rect.left, top: rect.top });
+    }
+    setGameWindowDrag({
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      originLeft: gameWindowPosition?.left ?? rect.left,
+      originTop: gameWindowPosition?.top ?? rect.top,
+    });
+  };
+
+  const moveGameWindowDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!gameWindowDrag || gameWindowDrag.pointerId !== event.pointerId) return;
+
+    const width = gameWindowRef.current?.offsetWidth ?? 320;
+    const height = gameWindowRef.current?.offsetHeight ?? 80;
+    const nextLeft = gameWindowDrag.originLeft + event.clientX - gameWindowDrag.startX;
+    const nextTop = gameWindowDrag.originTop + event.clientY - gameWindowDrag.startY;
+
+    setGameWindowPosition({
+      left: Math.min(window.innerWidth - 48, Math.max(16 - width, nextLeft)),
+      top: Math.min(window.innerHeight - 48, Math.max(16, nextTop)),
+    });
+  };
+
+  const stopGameWindowDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    setGameWindowDrag(null);
+  };
 
   const issuerLogo = (issuer: string) => {
     if (issuer === "Anthropic") return "/anthropic.png";
@@ -117,7 +223,7 @@ export function DesignProcessSection() {
 
               <button
                 type="button"
-                onClick={() => setIsDoomOpen(true)}
+                onClick={() => setIsGameWindowOpen(true)}
                 className="border-cartoon bg-secondary px-7 py-3 rounded-lg font-display text-base font-black uppercase shadow-cartoon transition-transform hover:-translate-y-1"
               >
                 Press Me
@@ -125,34 +231,220 @@ export function DesignProcessSection() {
             </div>
           </motion.div>
 
-          {isDoomOpen && (
-            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96, y: 16 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="flex h-[82vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border-[3px] border-black bg-black shadow-[8px_8px_0_0_#000]"
-              >
-                <div className="flex items-center justify-between border-b-[3px] border-black bg-secondary px-4 py-3">
-                  <span className="font-display text-sm font-black uppercase tracking-widest">
-                    DOOM II
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsDoomOpen(false)}
-                    className="rounded-lg border-[2px] border-black bg-white px-3 py-1 font-display text-xs font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5"
+          {isGameWindowOpen &&
+            canUsePortal &&
+            createPortal(
+              <div className={`fixed inset-0 z-[2147483647] isolate bg-black/80 ${isGameWindowFullscreen ? "p-0" : "p-4"}`}>
+                <motion.div
+                  ref={gameWindowRef}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className={`flex flex-col overflow-hidden border-[3px] border-black bg-black shadow-[8px_8px_0_0_#000] ${
+                    isGameWindowFullscreen
+                      ? "h-[100dvh] w-[100vw] max-w-none"
+                      : isGameWindowMinimized
+                        ? "h-auto w-full max-w-md"
+                        : "h-[82vh] w-full max-w-5xl"
+                  }`}
+                  style={
+                    isGameWindowFullscreen
+                      ? {
+                          position: "absolute",
+                          left: 0,
+                          top: 0,
+                        }
+                      : {
+                          position: "absolute",
+                          left: gameWindowPosition?.left ?? "50%",
+                          top: gameWindowPosition?.top ?? "50%",
+                          translate: gameWindowPosition ? undefined : "-50% -50%",
+                        }
+                  }
+                >
+                  <div
+                    onPointerDown={startGameWindowDrag}
+                    onPointerMove={moveGameWindowDrag}
+                    onPointerUp={stopGameWindowDrag}
+                    onPointerCancel={stopGameWindowDrag}
+                    className="flex h-[72px] shrink-0 cursor-move items-center justify-between border-b-[3px] border-black bg-secondary px-4 py-3"
                   >
-                    Close
-                  </button>
-                </div>
-                <iframe
-                  title="DOOM II"
-                  src="/doom/doom.html"
-                  className="h-full w-full border-0"
-                  allow="fullscreen; gamepad"
-                />
-              </motion.div>
-            </div>
-          )}
+                    <div className="flex items-center gap-3">
+                      {activeGame && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveGame(null);
+                            setShowGameControls(false);
+                            setGameSessionId((current) => current + 1);
+                          }}
+                          className="border-[2px] border-black bg-white px-2 py-1 font-display text-[10px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5"
+                        >
+                          Back
+                        </button>
+                      )}
+                      <span className="font-display text-sm font-black uppercase tracking-widest">
+                        {selectedGame?.title ?? "GAMES.EXE"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {selectedGame && !isGameWindowMinimized && (
+                        <button
+                          type="button"
+                          aria-label="Show game controls"
+                          onClick={() => setShowGameControls((current) => !current)}
+                          className="border-[2px] border-black bg-white px-2 py-1 font-display text-[10px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5"
+                        >
+                          Controls
+                        </button>
+                      )}
+                      {selectedGame && !isGameWindowMinimized && (
+                        <button
+                          type="button"
+                          aria-label="Resume game"
+                          onClick={() => {
+                            gameFrameRef.current?.contentWindow?.postMessage("resume-game", "*");
+                            gameFrameRef.current?.contentWindow?.focus();
+                            gameFrameRef.current?.focus();
+                          }}
+                          className="border-[2px] border-black bg-white px-2 py-1 font-display text-[10px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5"
+                        >
+                          Resume
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        aria-label="Minimize game window"
+                        onClick={() => setIsGameWindowMinimized((current) => !current)}
+                        className="flex h-8 w-8 items-center justify-center border-[2px] border-black bg-white font-display text-lg font-black leading-none shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5"
+                      >
+                        -
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Toggle fullscreen game window"
+                        onClick={() => {
+                          setIsGameWindowFullscreen((current) => !current);
+                          setIsGameWindowMinimized(false);
+                        }}
+                        className="flex h-8 w-8 items-center justify-center border-[2px] border-black bg-white font-display text-sm font-black leading-none shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5"
+                      >
+                        {isGameWindowFullscreen ? "[]" : "□"}
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Close game window"
+                        onClick={() => {
+                          setIsGameWindowOpen(false);
+                          setIsGameWindowMinimized(false);
+                          setIsGameWindowFullscreen(false);
+                          setActiveGame(null);
+                          setShowGameControls(false);
+                          setGameWindowPosition(null);
+                          setGameWindowDrag(null);
+                          setGameSessionId((current) => current + 1);
+                        }}
+                        className="flex h-8 w-8 items-center justify-center border-[2px] border-black bg-white font-display text-sm font-black leading-none shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5"
+                      >
+                        X
+                      </button>
+                    </div>
+                  </div>
+                  {!isGameWindowMinimized && (
+                    selectedGame ? (
+                      <div className="relative min-h-0 flex-1 overflow-hidden bg-black">
+                        <iframe
+                          ref={gameFrameRef}
+                          title={selectedGame.title}
+                          src={selectedGame.src}
+                          key={`${selectedGame.id}-${gameSessionId}`}
+                          className="block h-full w-full border-0"
+                          allow="fullscreen; gamepad"
+                        />
+
+                        {showGameControls && (
+                          <div className="absolute right-4 top-4 z-10 w-64 border-[3px] border-black bg-white p-4 shadow-[5px_5px_0_0_#000]">
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                              <h3 className="font-display text-lg font-black uppercase leading-none">
+                                Controls
+                              </h3>
+                              <button
+                                type="button"
+                                onClick={() => setShowGameControls(false)}
+                                className="flex h-7 w-7 items-center justify-center border-[2px] border-black bg-secondary font-display text-xs font-black shadow-[2px_2px_0_0_#000]"
+                              >
+                                X
+                              </button>
+                            </div>
+                            <ul className="space-y-2">
+                              {selectedGame.controls.map((control) => (
+                                <li
+                                  key={control}
+                                  className="border-b-2 border-black pb-1 font-sans text-sm font-black"
+                                >
+                                  {control}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-0 flex-1 flex-col bg-white">
+                        <div className="flex flex-1 items-center justify-center overflow-hidden px-6 py-8">
+                          <div className="grid w-full max-w-4xl grid-cols-1 gap-5 md:grid-cols-3">
+                            {GAMES.map((game) => (
+                              <button
+                                key={game.id}
+                                type="button"
+                                onClick={() => {
+                                  setActiveGame(game.id);
+                                  setShowGameControls(false);
+                                  setGameSessionId((current) => current + 1);
+                                }}
+                                className="group border-[3px] border-black bg-white p-3 text-left shadow-[5px_5px_0_0_#000] transition-transform hover:-translate-y-1"
+                              >
+                                <div className={`mb-3 flex aspect-[16/10] items-center justify-center border-[3px] border-black ${game.accent}`}>
+                                  <span className="font-display text-3xl font-black uppercase leading-none text-black">
+                                    {game.id === "doom" ? "DII" : "POP"}
+                                  </span>
+                                </div>
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <h3 className="font-display text-2xl font-black uppercase leading-none">
+                                      {game.title}
+                                    </h3>
+                                    <p className="mt-1 font-sans text-xs font-black uppercase text-gray-500">
+                                      {game.meta}
+                                    </p>
+                                  </div>
+                                  <span className="border-[2px] border-black bg-secondary px-2 py-1 font-display text-[10px] font-black uppercase">
+                                    {game.status}
+                                  </span>
+                                </div>
+                              </button>
+                            ))}
+
+                            <div className="border-[3px] border-dashed border-black bg-gray-100 p-3 opacity-70 shadow-[5px_5px_0_0_#000]">
+                              <div className="mb-3 flex aspect-[16/10] items-center justify-center border-[3px] border-black bg-white">
+                                <span className="font-display text-4xl font-black">?</span>
+                              </div>
+                              <h3 className="font-display text-2xl font-black uppercase leading-none">
+                                Coming Soon
+                              </h3>
+                              <p className="mt-1 font-sans text-xs font-black uppercase text-gray-500">
+                                Channel empty
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    )
+                  )}
+                </motion.div>
+              </div>,
+              document.body,
+            )}
 
           <div className="mt-16">
             <div className="mb-6 flex items-center gap-4">

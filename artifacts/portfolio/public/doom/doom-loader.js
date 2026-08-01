@@ -15,6 +15,12 @@ const hasWebAssembly = () => {
 
 const statusEl = document.getElementById("status");
 const canvas = document.getElementById("canvas");
+const doomKeyMap = {
+  w: { key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
+  a: { key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 },
+  s: { key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
+  d: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
+};
 
 function setStatus(text) {
   if (statusEl) statusEl.textContent = text;
@@ -68,6 +74,47 @@ function startDoom() {
   canvas?.addEventListener("webglcontextlost", (event) => {
     event.preventDefault();
     setStatus("WebGL context lost. Reload the game.");
+  });
+
+  window.addEventListener(
+    "keydown",
+    (event) => {
+      const mapped = doomKeyMap[event.key.toLowerCase()];
+      if (!mapped || event.repeat) return;
+      event.preventDefault();
+      canvas?.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          ...mapped,
+          which: mapped.keyCode,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    },
+    true,
+  );
+
+  window.addEventListener(
+    "keyup",
+    (event) => {
+      const mapped = doomKeyMap[event.key.toLowerCase()];
+      if (!mapped) return;
+      event.preventDefault();
+      canvas?.dispatchEvent(
+        new KeyboardEvent("keyup", {
+          ...mapped,
+          which: mapped.keyCode,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    },
+    true,
+  );
+
+  window.addEventListener("message", (event) => {
+    if (event.data !== "resume-game") return;
+    canvas?.focus();
   });
 
   const script = document.createElement("script");
