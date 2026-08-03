@@ -69,11 +69,7 @@ const CERTIFICATIONS = [
   },
 ];
 
-<<<<<<< HEAD
-type GameId = "doom" | "prince";
-=======
 type GameId = "doom" | "bounce" | "diamond";
->>>>>>> c577921 (integrated bounce classic and diamond rush. removed prince of persia)
 
 const GAMES: Array<{
   id: GameId;
@@ -82,10 +78,7 @@ const GAMES: Array<{
   status: string;
   src: string;
   accent: string;
-<<<<<<< HEAD
-=======
   label: string;
->>>>>>> c577921 (integrated bounce classic and diamond rush. removed prince of persia)
   controls: string[];
 }> = [
   {
@@ -93,20 +86,6 @@ const GAMES: Array<{
     title: "DOOM II",
     meta: "FPS / WAD / 1994",
     status: "READY",
-<<<<<<< HEAD
-    src: "/doom/doom.html?v=4",
-    accent: "bg-[#ffcf33]",
-    controls: ["Arrows / WASD: move", "Ctrl / Space: fire", "Shift: run", "Enter: select", "Esc: menu"],
-  },
-  {
-    id: "prince",
-    title: "PRINCE.EXE",
-    meta: "PLATFORM / DOS / 1989",
-    status: "READY",
-    src: "/games/princejs/index.html?v=10",
-    accent: "bg-[#8fe3ff]",
-    controls: ["A / D: move", "W: jump / climb", "S: crouch / climb down", "J / K: action, grab, strike", "Arrows + Shift also work"],
-=======
     src: "/games/doom/doom.html?v=4",
     accent: "bg-[#ffcf33]",
     label: "DII",
@@ -131,7 +110,6 @@ const GAMES: Array<{
     accent: "bg-[#70e1c8]",
     label: "DR",
     controls: ["WASD / Arrows: move", "Enter / 5: select", "Q / W: soft keys", "E / R: * and #"],
->>>>>>> c577921 (integrated bounce classic and diamond rush. removed prince of persia)
   },
 ];
 
@@ -154,14 +132,11 @@ export function DesignProcessSection() {
   } | null>(null);
   const canUsePortal = typeof document !== "undefined";
   const selectedGame = GAMES.find((game) => game.id === activeGame);
-<<<<<<< HEAD
-=======
   const selectedGameSrc = selectedGame
     ? `${import.meta.env.BASE_URL.replace(/\/$/, "")}${selectedGame.src}`
     : "";
   const isJ2meGame = selectedGame?.id === "bounce" || selectedGame?.id === "diamond";
   const isBounceGame = selectedGame?.id === "bounce";
->>>>>>> c577921 (integrated bounce classic and diamond rush. removed prince of persia)
 
   useEffect(() => {
     if (!isGameWindowOpen) return;
@@ -287,15 +262,11 @@ export function DesignProcessSection() {
                       ? "h-[100dvh] w-[100vw] max-w-none"
                       : isGameWindowMinimized
                         ? "h-auto w-full max-w-md"
-<<<<<<< HEAD
-                        : "h-[82vh] w-full max-w-5xl"
-=======
                         : isBounceGame
                           ? "h-[76vh] w-[min(96vw,640px)] max-w-[640px]"
                           : isJ2meGame
                             ? "h-[92vh] w-[min(96vw,760px)] max-w-[760px]"
-                          : "h-[82vh] w-full max-w-5xl"
->>>>>>> c577921 (integrated bounce classic and diamond rush. removed prince of persia)
+                            : "h-[82vh] w-full max-w-5xl"
                   }`}
                   style={
                     isGameWindowFullscreen
@@ -406,11 +377,7 @@ export function DesignProcessSection() {
                         <iframe
                           ref={gameFrameRef}
                           title={selectedGame.title}
-<<<<<<< HEAD
-                          src={selectedGame.src}
-=======
                           src={selectedGameSrc}
->>>>>>> c577921 (integrated bounce classic and diamond rush. removed prince of persia)
                           key={`${selectedGame.id}-${gameSessionId}`}
                           className="block h-full w-full border-0"
                           allow="fullscreen; gamepad"
@@ -454,22 +421,15 @@ export function DesignProcessSection() {
                                 onClick={() => {
                                   setActiveGame(game.id);
                                   setShowGameControls(false);
-<<<<<<< HEAD
-=======
                                   setGameWindowPosition(null);
                                   setGameWindowDrag(null);
->>>>>>> c577921 (integrated bounce classic and diamond rush. removed prince of persia)
                                   setGameSessionId((current) => current + 1);
                                 }}
                                 className="group border-[3px] border-black bg-white p-3 text-left shadow-[5px_5px_0_0_#000] transition-transform hover:-translate-y-1"
                               >
                                 <div className={`mb-3 flex aspect-[16/10] items-center justify-center border-[3px] border-black ${game.accent}`}>
                                   <span className="font-display text-3xl font-black uppercase leading-none text-black">
-<<<<<<< HEAD
-                                    {game.id === "doom" ? "DII" : "POP"}
-=======
                                     {game.label}
->>>>>>> c577921 (integrated bounce classic and diamond rush. removed prince of persia)
                                   </span>
                                 </div>
                                 <div className="flex items-start justify-between gap-3">
@@ -487,21 +447,6 @@ export function DesignProcessSection() {
                                 </div>
                               </button>
                             ))}
-
-<<<<<<< HEAD
-                            <div className="border-[3px] border-dashed border-black bg-gray-100 p-3 opacity-70 shadow-[5px_5px_0_0_#000]">
-                              <div className="mb-3 flex aspect-[16/10] items-center justify-center border-[3px] border-black bg-white">
-                                <span className="font-display text-4xl font-black">?</span>
-                              </div>
-                              <h3 className="font-display text-2xl font-black uppercase leading-none">
-                                Coming Soon
-                              </h3>
-                              <p className="mt-1 font-sans text-xs font-black uppercase text-gray-500">
-                                Channel empty
-                              </p>
-                            </div>
-=======
->>>>>>> c577921 (integrated bounce classic and diamond rush. removed prince of persia)
                           </div>
                         </div>
 
