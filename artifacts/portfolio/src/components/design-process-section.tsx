@@ -79,6 +79,7 @@ const GAMES: Array<{
   src: string;
   accent: string;
   label: string;
+  thumbnail: string;
   controls: string[];
 }> = [
   {
@@ -89,6 +90,7 @@ const GAMES: Array<{
     src: "/games/doom/doom.html?v=4",
     accent: "bg-[#ffcf33]",
     label: "DII",
+    thumbnail: "/doom.jpg",
     controls: ["Arrows / WASD: move", "Ctrl: fire", "Shift: run", "Space / E: use", "Esc: menu", "No jump in classic Doom"],
   },
   {
@@ -99,6 +101,7 @@ const GAMES: Array<{
     src: "/games/j2me-web/run.html?jar=bounce.jar&fractionScale=1&v=7",
     accent: "bg-[#ff6b6b]",
     label: "BOU",
+    thumbnail: "/bounce.jpg",
     controls: ["WASD / Arrows: move", "Enter / 5: select", "Q / W: soft keys", "E / R: * and #"],
   },
   {
@@ -109,6 +112,7 @@ const GAMES: Array<{
     src: "/games/j2me-web/run.html?jar=diamond.jar&fractionScale=1&v=7",
     accent: "bg-[#70e1c8]",
     label: "DR",
+    thumbnail: "/diamond_rush.jpg",
     controls: ["WASD / Arrows: move", "Enter / 5: select", "Q / W: soft keys", "E / R: * and #"],
   },
 ];
@@ -427,10 +431,13 @@ export function DesignProcessSection() {
                                 }}
                                 className="group border-[3px] border-black bg-white p-3 text-left shadow-[5px_5px_0_0_#000] transition-transform hover:-translate-y-1"
                               >
-                                <div className={`mb-3 flex aspect-[16/10] items-center justify-center border-[3px] border-black ${game.accent}`}>
-                                  <span className="font-display text-3xl font-black uppercase leading-none text-black">
-                                    {game.label}
-                                  </span>
+                                <div className={`mb-3 flex aspect-[16/10] items-center justify-center overflow-hidden border-[3px] border-black ${game.accent}`}>
+                                  <img
+                                    src={game.thumbnail}
+                                    alt={`${game.title} thumbnail`}
+                                    className="h-full w-full object-cover"
+                                    draggable={false}
+                                  />
                                 </div>
                                 <div className="flex items-start justify-between gap-3">
                                   <div>
