@@ -208,7 +208,7 @@ export function DesignProcessSection() {
 
   return (
     <LockedSection unlockKey="uiux" title="About Me" towerName="About Me Unit">
-      <section id="about" className="py-24 px-4 md:px-8 bg-white relative z-10">
+      <section id="about" className="section-soft-entry py-24 px-4 md:px-8 bg-white relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center gap-4 mb-12">
             <h2 className="text-4xl md:text-5xl font-display uppercase tracking-wider">

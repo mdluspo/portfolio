@@ -32,7 +32,7 @@ function PageContent() {
   }, [hasUnlockedSection]);
 
   return (
-    <div className="w-full bg-white text-black">
+    <div className="w-full overflow-x-clip bg-white text-black">
       <HeroSection />
       {placed.has("uiux") && <DesignProcessSection />}
       {placed.has("frontend") && <ProjectsSection />}

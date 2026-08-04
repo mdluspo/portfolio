@@ -41,6 +41,7 @@ export const Enemy = React.memo(function Enemy({
       style={{
         opacity: enemy.opacity ?? 1,
         transform: `translate3d(${enemy.x}px, ${enemy.y}px, 0) translate(-50%, -50%)`,
+        transition: "opacity 760ms ease",
         willChange: "transform, opacity",
       }}
       onPointerDown={(e) => onPointerDown?.(e, enemy)}

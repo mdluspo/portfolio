@@ -375,7 +375,7 @@ export function SkillsSection() {
 
   return (
     <LockedSection unlockKey="techstack" title="Skills & Tech Stack" towerName="Tech Stack Tower">
-      <section id="techstack" className="py-24 px-4 md:px-8 bg-[#f7fbff] relative z-10 overflow-hidden">
+      <section id="techstack" className="section-soft-entry py-24 px-4 md:px-8 bg-[#f7fbff] relative z-10 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-4 mb-16">
             <div className="h-1 flex-1 bg-black rounded-full" />

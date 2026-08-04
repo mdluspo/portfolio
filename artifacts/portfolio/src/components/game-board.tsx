@@ -55,6 +55,8 @@ const ROAD_SEGMENTS = [
   { p0: [650, 565], p1: [765, 523], p2: [805, 455], p3: [930, 395] },
   { p0: [930, 395], p1: [1045, 340], p2: [1135, 295], p3: [1240, 190] },
 ];
+const ROAD_PATH_D =
+  "M 235,660 C 390,625 525,610 650,565 C 765,523 805,455 930,395 C 1045,340 1135,295 1240,190";
 const GAME_RENDER_FPS = 30;
 const MAX_ACTIVE_ENEMIES = 14;
 
@@ -106,20 +108,31 @@ function nearestRoadPoint(x: number, y: number) {
   return nearest;
 }
 
-function randomDeploymentPoint() {
-  const s = 0.2 + Math.random() * 0.62;
+function randomDeploymentPoint(pageScroll = window.scrollY) {
+  const s = 0.28 + Math.random() * 0.46;
   const pt = pointOnScreenPath(s);
   const pageWidth = Math.max(document.documentElement.scrollWidth, window.innerWidth);
   const heroHeight = window.innerHeight || 600;
-  const offsetX = (Math.random() - 0.5) * 150;
-  const aboveRoadOffset = 96 + Math.random() * 150;
-  const minX = Math.min(pageWidth - 90, Math.max(90, pageWidth * 0.34));
-  const maxX = Math.max(minX, pageWidth - 90);
+  const offsetX = (Math.random() - 0.5) * 120;
+  const aboveRoadOffset = 130 + Math.random() * 165;
+  const minX = Math.min(pageWidth - 110, Math.max(420, pageWidth * 0.52));
+  const maxX = Math.max(minX, pageWidth - 120);
+  const minY = 115 + pageScroll;
+  const maxY = pageScroll + heroHeight * 0.57;
 
   return {
     x: clamp(pt.x + offsetX, minX, maxX),
-    y: clamp(pt.y - aboveRoadOffset + window.scrollY, 100 + window.scrollY, window.scrollY + heroHeight * 0.54),
+    y: clamp(pt.y - aboveRoadOffset + pageScroll, minY, maxY),
   };
+}
+
+function heroEdgeOpacity(y: number) {
+  const height = window.innerHeight || 600;
+  const fadeStart = height - 140;
+  const fadeEnd = height - 24;
+
+  if (y <= fadeStart) return 1;
+  return clamp(1 - (y - fadeStart) / (fadeEnd - fadeStart), 0, 1);
 }
 
 function towerAttackConfig(key: TowerKey) {
@@ -340,7 +353,11 @@ function TowerVisual({
   );
 }
 
-export function GameBoard() {
+type GameBoardProps = {
+  autoDeployKey?: TowerKey | null;
+};
+
+export function GameBoard({ autoDeployKey }: GameBoardProps) {
   const { placed, place, remove } = useUnlockState();
   const [deployedTowers, setDeployedTowers] = useState<Partial<Record<TowerKey, DeployedTower>>>({});
   const [dragging, setDragging] = useState<DragState | null>(null);
@@ -379,6 +396,21 @@ export function GameBoard() {
     }));
     place(key);
   }, [place, placed]);
+
+  useEffect(() => {
+    if (!autoDeployKey || deployedTowers[autoDeployKey]) return;
+
+    const point = randomDeploymentPoint(0);
+    setDeployedTowers((prev) => ({
+      ...prev,
+      [autoDeployKey]: {
+        key: autoDeployKey,
+        x: point.x,
+        y: point.y,
+      },
+    }));
+    if (!placed.has(autoDeployKey)) place(autoDeployKey);
+  }, [autoDeployKey, deployedTowers, place, placed]);
 
   useEffect(() => {
     setDeployedTowers((prev) => {
@@ -430,7 +462,7 @@ export function GameBoard() {
 
       UNITS.forEach(({ key }) => {
         if (!placed.has(key) || next[key]) return;
-        next[key] = { key, ...randomDeploymentPoint() };
+        next[key] = { key, ...randomDeploymentPoint(0) };
         changed = true;
       });
 
@@ -971,6 +1003,9 @@ export function GameBoard() {
   const allOthers = (["uiux", "frontend", "techstack", "signal"] as TowerKey[]).every((k) =>
     placed.has(k),
   );
+  const hasUnlockedSection = (["uiux", "frontend", "techstack", "signal"] as TowerKey[]).some((k) =>
+    placed.has(k),
+  );
   const meMessage = useMemo(() => {
     const meTower = deployedTowers.me;
     if (meTower) {
@@ -997,6 +1032,7 @@ export function GameBoard() {
         <div className="sr-only" aria-live="polite" aria-atomic="true">
           {liveMessage}
         </div>
+        <div className="hero-board-texture" aria-hidden="true" />
         <svg
           viewBox="0 0 1200 600"
           className="absolute inset-y-0 -left-[8vw] h-full w-[128vw] pointer-events-none"
@@ -1016,7 +1052,7 @@ export function GameBoard() {
 
           <g mask="url(#road-left-mask)">
             <path
-              d="M 235,660 C 390,625 525,610 650,565 C 765,523 805,455 930,395 C 1045,340 1135,295 1240,190"
+              d={ROAD_PATH_D}
               fill="none"
               stroke="hsl(208 61% 88%)"
               strokeWidth="90"
@@ -1024,7 +1060,7 @@ export function GameBoard() {
               strokeLinejoin="round"
             />
             <path
-              d="M 235,660 C 390,625 525,610 650,565 C 765,523 805,455 930,395 C 1045,340 1135,295 1240,190"
+              d={ROAD_PATH_D}
               fill="none"
               stroke="white"
               strokeWidth="62"
@@ -1033,7 +1069,7 @@ export function GameBoard() {
             />
             <path
               className="road-dashes"
-              d="M 235,660 C 390,625 525,610 650,565 C 765,523 805,455 930,395 C 1045,340 1135,295 1240,190"
+              d={ROAD_PATH_D}
               fill="none"
               stroke="hsl(208 61% 82%)"
               strokeWidth="3"
@@ -1046,7 +1082,14 @@ export function GameBoard() {
 
       {/* render enemies */}
       {enemies.map((en) => (
-        <Enemy key={en.id} enemy={en} onPointerDown={startEnemyDrag} />
+        <Enemy
+          key={en.id}
+          enemy={{
+            ...en,
+            opacity: en.dragged || !hasUnlockedSection ? en.opacity : (en.opacity ?? 1) * heroEdgeOpacity(en.y),
+          }}
+          onPointerDown={startEnemyDrag}
+        />
       ))}
 
       {bullets.map((bullet) => (
@@ -1094,7 +1137,13 @@ export function GameBoard() {
         </div>
       )}
 
-      <div ref={trayRef} className="absolute bottom-5 left-1/2 z-30 w-full -translate-x-1/2 bg-transparent px-3 py-3">
+      <div
+        ref={trayRef}
+        className={cn(
+          "absolute bottom-5 left-1/2 z-30 w-full -translate-x-1/2 bg-transparent px-3 py-3 transition-opacity duration-300",
+          allOthers && "opacity-45 hover:opacity-100 focus-within:opacity-100",
+        )}
+      >
         <p className="text-center font-display text-[10px] uppercase tracking-widest text-gray-400 mb-2">
           Drag or tap a unit
         </p>

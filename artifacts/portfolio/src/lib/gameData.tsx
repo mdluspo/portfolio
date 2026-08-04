@@ -25,8 +25,8 @@ export const UNITS: Unit[] = [
   },
   {
     key: "uiux",
-    name: "About Me",
-    unlocks: "About Me",
+    name: "About",
+    unlocks: "About",
     icon: Palette,
     color: "bg-pink-200",
   },
