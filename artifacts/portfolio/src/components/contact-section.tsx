@@ -5,7 +5,7 @@ import { LockedSection } from "@/components/locked-section";
 export function ContactSection() {
   return (
     <LockedSection unlockKey="signal" title="Contact & Socials" towerName="Signal Tower">
-      <section id="contact" className="py-32 px-4 md:px-8 max-w-4xl mx-auto relative z-10">
+      <section id="contact" className="section-soft-entry py-32 px-4 md:px-8 max-w-4xl mx-auto relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}

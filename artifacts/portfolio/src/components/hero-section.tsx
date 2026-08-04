@@ -37,6 +37,11 @@ export function HeroSection() {
     e.preventDefault();
     if (allPlaced) {
       clear();
+      setPendingContactScroll(false);
+      window.scrollTo({
+        top: 0,
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      });
       return;
     }
 
@@ -80,7 +85,7 @@ export function HeroSection() {
             <a
               href="#contact"
               onClick={openContact}
-              className="border-cartoon bg-primary px-5 py-2 rounded-lg font-display font-bold text-sm uppercase shadow-cartoon outline-none hover:-translate-y-1 focus-visible:ring-4 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-white transition-transform"
+              className="border-cartoon bg-white px-5 py-2 rounded-lg font-display font-bold text-sm uppercase shadow-cartoon outline-none hover:-translate-y-1 focus-visible:ring-4 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-white transition-transform"
             >
               Contact
             </a>
@@ -101,7 +106,7 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            I build interfaces that feel alive.
+            I design and build playful, accessible React interfaces.
           </motion.p>
           <motion.p
             initial={{ opacity: 0, y: 10 }}
@@ -116,12 +121,12 @@ export function HeroSection() {
             transition={{ delay: 0.64 }}
             className="text-gray-400 text-base"
           >
-            Drag the towers onto the road to explore.
+            Drag or tap units to unlock sections.
           </motion.p>
         </div>
       </div>
 
-      {/* RIGHT — game area, same white background, no divider */}
+      
       <motion.button
         type="button"
         onClick={toggleSkip}

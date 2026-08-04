@@ -197,7 +197,7 @@ export function ProjectsSection() {
 
   return (
     <LockedSection unlockKey="frontend" title="Projects / Case Studies" towerName="Frontend Tower">
-      <section id="projects" className="relative z-30 mx-auto max-w-6xl px-4 py-24 md:px-8">
+      <section id="projects" className="section-soft-entry relative z-30 mx-auto max-w-6xl px-4 py-24 md:px-8">
         <div className="mb-12 flex items-center gap-4">
           <h2 className="text-4xl uppercase tracking-wider md:text-5xl">
             Featured Projects
