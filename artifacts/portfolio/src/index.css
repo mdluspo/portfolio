@@ -471,9 +471,33 @@
   }
   .skills-deck-copy-side {
     left: 6%;
-    top: 26%;
+    top: 23%;
+    max-width: 11rem;
     transform: translateZ(2px) rotateZ(90deg);
     transform-origin: left top;
+  }
+  .skills-deck-copy-side strong {
+    display: block;
+    max-width: 11rem;
+    overflow: hidden;
+    text-overflow: clip;
+    white-space: nowrap;
+    font-size: clamp(1.1rem, 2.35vw, 1.9rem);
+  }
+  .skills-deck-copy-side strong.skills-side-label-medium {
+    font-size: clamp(1.04rem, 2.08vw, 1.66rem);
+  }
+  .skills-deck-copy-side strong.skills-side-label-frameworks {
+    font-size: clamp(1.02rem, 2vw, 1.58rem);
+  }
+  .skills-deck-copy-side strong.skills-side-label-long {
+    font-size: clamp(1.08rem, 2.12vw, 1.68rem);
+  }
+  .skills-deck-copy-side strong.skills-side-label-ai {
+    font-size: clamp(1.03rem, 2.02vw, 1.56rem);
+  }
+  .skills-deck-copy-side strong.skills-side-label-compact {
+    font-size: clamp(1.18rem, 2.45vw, 2rem);
   }
 }
 
@@ -520,7 +544,27 @@
   }
   .skills-deck-copy-side {
     left: 7%;
-    top: 26%;
+    top: 24%;
+    max-width: 7.75rem;
+  }
+  .skills-deck-copy-side strong {
+    max-width: 7.75rem;
+    font-size: 1.1rem;
+  }
+  .skills-deck-copy-side strong.skills-side-label-medium {
+    font-size: 1rem;
+  }
+  .skills-deck-copy-side strong.skills-side-label-frameworks {
+    font-size: 0.98rem;
+  }
+  .skills-deck-copy-side strong.skills-side-label-long {
+    font-size: 1.02rem;
+  }
+  .skills-deck-copy-side strong.skills-side-label-ai {
+    font-size: 0.98rem;
+  }
+  .skills-deck-copy-side strong.skills-side-label-compact {
+    font-size: 1.18rem;
   }
 }
 
