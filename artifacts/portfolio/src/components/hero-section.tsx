@@ -55,7 +55,7 @@ export function HeroSection() {
   return (
     <section className="relative h-[100dvh] bg-white overflow-x-hidden overflow-y-visible">
       <GameBoard />
-      {/* LEFT — pure white, no card, no box, no border */}
+        {/* LEFT — pure white, no card, no box, no border */}
       <div className="pointer-events-none relative z-10 flex h-full w-full flex-col justify-center px-10 py-12 lg:w-[42%] lg:px-16">
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
