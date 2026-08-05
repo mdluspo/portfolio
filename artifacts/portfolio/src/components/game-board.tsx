@@ -128,8 +128,8 @@ function randomDeploymentPoint(pageScroll = window.scrollY) {
 
 function heroEdgeOpacity(y: number) {
   const height = window.innerHeight || 600;
-  const fadeStart = height - 140;
-  const fadeEnd = height - 24;
+  const fadeStart = height - 190;
+  const fadeEnd = height - 82;
 
   if (y <= fadeStart) return 1;
   return clamp(1 - (y - fadeStart) / (fadeEnd - fadeStart), 0, 1);
@@ -1147,7 +1147,7 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
         <p className="text-center font-display text-[10px] uppercase tracking-widest text-gray-400 mb-2">
           Drag or tap a unit
         </p>
-        <div className="flex justify-center gap-2 overflow-x-auto pb-1">
+        <div className="flex justify-center gap-2 overflow-x-auto px-1 pb-2 pt-2">
           {UNITS.map((unit) => {
             const isPlaced = placed.has(unit.key);
             const Icon = unit.icon;
