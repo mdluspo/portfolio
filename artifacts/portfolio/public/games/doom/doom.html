@@ -12,6 +12,7 @@
         margin: 0;
         padding: 0;
         overflow: hidden;
+        overscroll-behavior: none;
         background: #050505;
         color: #ffcf33;
         font-family: Arial, sans-serif;
@@ -82,6 +83,54 @@
         -webkit-tap-highlight-color: transparent;
       }
 
+      .touch-stick {
+        position: relative;
+        color: transparent;
+      }
+
+      .touch-stick::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 46%;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background: #ffcf33;
+        box-shadow:
+          inset -2px -2px 0 rgb(0 0 0 / 0.55),
+          inset 2px 2px 0 rgb(255 255 255 / 0.45);
+        transform: translate(-50%, -50%);
+      }
+
+      .touch-stick::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 16%;
+        height: 34%;
+        border-radius: 999px;
+        background: #ffcf33;
+        transform-origin: 50% 100%;
+      }
+
+      .touch-up::after {
+        transform: translate(-50%, -112%) rotate(0deg);
+      }
+
+      .touch-left::after {
+        transform: translate(-118%, -50%) rotate(-90deg);
+      }
+
+      .touch-right::after {
+        transform: translate(18%, -50%) rotate(90deg);
+      }
+
+      .touch-down::after {
+        transform: translate(-50%, 12%) rotate(180deg);
+      }
+
       .touch-key:active,
       .touch-key.is-pressed {
         background: #ffcf33;
@@ -137,15 +186,15 @@
     <canvas id="canvas" tabindex="0" oncontextmenu="event.preventDefault()"></canvas>
     <div id="touch-controls" aria-label="DOOM touch controls">
       <div class="touch-pad">
-        <button class="touch-key touch-up" data-doom-key="ArrowUp" type="button">Up</button>
-        <button class="touch-key touch-left" data-doom-key="ArrowLeft" type="button">Left</button>
-        <button class="touch-key touch-right" data-doom-key="ArrowRight" type="button">Right</button>
-        <button class="touch-key touch-down" data-doom-key="ArrowDown" type="button">Down</button>
+        <button class="touch-key touch-stick touch-up" data-doom-key="ArrowUp" type="button" aria-label="Move up">Up</button>
+        <button class="touch-key touch-stick touch-left" data-doom-key="ArrowLeft" type="button" aria-label="Move left">Left</button>
+        <button class="touch-key touch-stick touch-right" data-doom-key="ArrowRight" type="button" aria-label="Move right">Right</button>
+        <button class="touch-key touch-stick touch-down" data-doom-key="ArrowDown" type="button" aria-label="Move down">Down</button>
       </div>
       <div></div>
       <div class="touch-actions">
         <button class="touch-key" data-doom-key="Control" type="button">Fire</button>
-        <button class="touch-key" data-doom-key="Space" type="button">Use</button>
+        <button class="touch-key" data-doom-keys="Space,Enter" type="button">Use</button>
         <button class="touch-key" data-doom-key="Shift" type="button">Run</button>
         <button class="touch-key" data-doom-key="Escape" type="button">Menu</button>
       </div>

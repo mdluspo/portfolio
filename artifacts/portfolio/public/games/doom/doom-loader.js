@@ -29,6 +29,7 @@ const doomTouchKeyMap = {
   ArrowRight: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
   Control: { key: "Control", code: "ControlLeft", keyCode: 17 },
   Space: { key: " ", code: "Space", keyCode: 32 },
+  Enter: { key: "Enter", code: "Enter", keyCode: 13 },
   Shift: { key: "Shift", code: "ShiftLeft", keyCode: 16 },
   Escape: { key: "Escape", code: "Escape", keyCode: 27 },
 };
@@ -125,21 +126,22 @@ function startDoom() {
     canvas?.focus();
   });
 
-  document.querySelectorAll("[data-doom-key]").forEach((button) => {
-    const mapped = doomTouchKeyMap[button.dataset.doomKey];
-    if (!mapped) return;
+  document.querySelectorAll("[data-doom-key], [data-doom-keys]").forEach((button) => {
+    const keyNames = (button.dataset.doomKeys ?? button.dataset.doomKey ?? "").split(",").map((key) => key.trim());
+    const mappedKeys = keyNames.map((key) => doomTouchKeyMap[key]).filter(Boolean);
+    if (mappedKeys.length === 0) return;
 
     const press = (event) => {
       event.preventDefault();
       button.classList.add("is-pressed");
       canvas?.focus();
-      dispatchDoomKey("keydown", mapped);
+      mappedKeys.forEach((mapped) => dispatchDoomKey("keydown", mapped));
     };
 
     const release = (event) => {
       event.preventDefault();
       button.classList.remove("is-pressed");
-      dispatchDoomKey("keyup", mapped);
+      mappedKeys.forEach((mapped) => dispatchDoomKey("keyup", mapped));
     };
 
     button.addEventListener("pointerdown", press);
