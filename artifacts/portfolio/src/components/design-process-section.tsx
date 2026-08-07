@@ -256,7 +256,7 @@ export function DesignProcessSection() {
           {isGameWindowOpen &&
             canUsePortal &&
             createPortal(
-              <div className={`fixed inset-0 z-[2147483647] isolate bg-black/80 ${isGameWindowFullscreen ? "p-0" : "p-4"}`}>
+              <div className={`fixed inset-0 z-[2147483647] isolate bg-black/80 ${isGameWindowFullscreen ? "p-0" : "p-2 sm:p-4"}`}>
                 <motion.div
                   ref={gameWindowRef}
                   initial={{ opacity: 0 }}
@@ -265,12 +265,12 @@ export function DesignProcessSection() {
                     isGameWindowFullscreen
                       ? "h-[100dvh] w-[100vw] max-w-none"
                       : isGameWindowMinimized
-                        ? "h-auto w-full max-w-md"
+                        ? "h-auto w-[calc(100vw-1rem)] max-w-md sm:w-full"
                         : isBounceGame
-                          ? "h-[76vh] w-[min(96vw,640px)] max-w-[640px]"
+                          ? "h-[82dvh] w-[calc(100vw-1rem)] max-w-[640px] sm:h-[76vh] sm:w-[min(96vw,640px)]"
                           : isJ2meGame
-                            ? "h-[92vh] w-[min(96vw,760px)] max-w-[760px]"
-                            : "h-[82vh] w-full max-w-5xl"
+                            ? "h-[88dvh] w-[calc(100vw-1rem)] max-w-[760px] sm:h-[92vh] sm:w-[min(96vw,760px)]"
+                            : "h-[82dvh] w-[calc(100vw-1rem)] max-w-5xl sm:w-full"
                   }`}
                   style={
                     isGameWindowFullscreen
@@ -292,9 +292,9 @@ export function DesignProcessSection() {
                     onPointerMove={moveGameWindowDrag}
                     onPointerUp={stopGameWindowDrag}
                     onPointerCancel={stopGameWindowDrag}
-                    className="flex h-[72px] shrink-0 cursor-move items-center justify-between border-b-[3px] border-black bg-secondary px-4 py-3"
+                    className="flex min-h-[72px] shrink-0 cursor-move flex-wrap items-center justify-between gap-2 border-b-[3px] border-black bg-secondary px-3 py-3 sm:px-4"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                       {activeGame && (
                         <button
                           type="button"
@@ -303,22 +303,22 @@ export function DesignProcessSection() {
                             setShowGameControls(false);
                             setGameSessionId((current) => current + 1);
                           }}
-                          className="border-[2px] border-black bg-white px-2 py-1 font-display text-[10px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5"
+                          className="border-[2px] border-black bg-white px-1.5 py-1 font-display text-[9px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:px-2 sm:text-[10px]"
                         >
                           Back
                         </button>
                       )}
-                      <span className="font-display text-sm font-black uppercase tracking-widest">
+                      <span className="truncate font-display text-xs font-black uppercase tracking-widest sm:text-sm">
                         {selectedGame?.title ?? "GAMES.EXE"}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                       {selectedGame && !isGameWindowMinimized && (
                         <button
                           type="button"
                           aria-label="Show game controls"
                           onClick={() => setShowGameControls((current) => !current)}
-                          className="border-[2px] border-black bg-white px-2 py-1 font-display text-[10px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5"
+                          className="border-[2px] border-black bg-white px-1.5 py-1 font-display text-[9px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:px-2 sm:text-[10px]"
                         >
                           Controls
                         </button>
@@ -332,7 +332,7 @@ export function DesignProcessSection() {
                             gameFrameRef.current?.contentWindow?.focus();
                             gameFrameRef.current?.focus();
                           }}
-                          className="border-[2px] border-black bg-white px-2 py-1 font-display text-[10px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5"
+                          className="border-[2px] border-black bg-white px-1.5 py-1 font-display text-[9px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:px-2 sm:text-[10px]"
                         >
                           Resume
                         </button>
@@ -341,7 +341,7 @@ export function DesignProcessSection() {
                         type="button"
                         aria-label="Minimize game window"
                         onClick={() => setIsGameWindowMinimized((current) => !current)}
-                        className="flex h-8 w-8 items-center justify-center border-[2px] border-black bg-white font-display text-lg font-black leading-none shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5"
+                        className="flex h-7 w-7 items-center justify-center border-[2px] border-black bg-white font-display text-lg font-black leading-none shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:h-8 sm:w-8"
                       >
                         -
                       </button>
@@ -352,9 +352,9 @@ export function DesignProcessSection() {
                           setIsGameWindowFullscreen((current) => !current);
                           setIsGameWindowMinimized(false);
                         }}
-                        className="flex h-8 w-8 items-center justify-center border-[2px] border-black bg-white font-display text-sm font-black leading-none shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5"
+                        className="flex h-7 w-7 items-center justify-center border-[2px] border-black bg-white font-display text-sm font-black leading-none shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:h-8 sm:w-8"
                       >
-                        {isGameWindowFullscreen ? "[]" : "□"}
+                        {isGameWindowFullscreen ? "[]" : "[ ]"}
                       </button>
                       <button
                         type="button"
@@ -369,7 +369,7 @@ export function DesignProcessSection() {
                           setGameWindowDrag(null);
                           setGameSessionId((current) => current + 1);
                         }}
-                        className="flex h-8 w-8 items-center justify-center border-[2px] border-black bg-white font-display text-sm font-black leading-none shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5"
+                        className="flex h-7 w-7 items-center justify-center border-[2px] border-black bg-white font-display text-sm font-black leading-none shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:h-8 sm:w-8"
                       >
                         X
                       </button>
@@ -388,7 +388,7 @@ export function DesignProcessSection() {
                         />
 
                         {showGameControls && (
-                          <div className="absolute right-4 top-4 z-10 w-64 border-[3px] border-black bg-white p-4 shadow-[5px_5px_0_0_#000]">
+                          <div className="absolute right-2 top-2 z-10 w-[min(16rem,calc(100%-1rem))] border-[3px] border-black bg-white p-3 shadow-[5px_5px_0_0_#000] sm:right-4 sm:top-4 sm:p-4">
                             <div className="mb-3 flex items-center justify-between gap-3">
                               <h3 className="font-display text-lg font-black uppercase leading-none">
                                 Controls
@@ -416,7 +416,7 @@ export function DesignProcessSection() {
                       </div>
                     ) : (
                       <div className="flex min-h-0 flex-1 flex-col bg-white">
-                        <div className="flex flex-1 items-center justify-center overflow-hidden px-6 py-8">
+                        <div className="flex flex-1 items-center justify-center overflow-y-auto px-3 py-5 sm:px-6 sm:py-8">
                           <div className="grid w-full max-w-4xl grid-cols-1 gap-5 md:grid-cols-3">
                             {GAMES.map((game) => (
                               <button

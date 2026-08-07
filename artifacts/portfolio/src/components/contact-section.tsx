@@ -5,12 +5,12 @@ import { LockedSection } from "@/components/locked-section";
 export function ContactSection() {
   return (
     <LockedSection unlockKey="signal" title="Contact & Socials" towerName="Signal Tower">
-      <section id="contact" className="section-soft-entry py-32 px-4 md:px-8 max-w-4xl mx-auto relative z-10">
+      <section id="contact" className="section-soft-entry relative z-10 mx-auto max-w-4xl px-4 py-20 md:px-8 md:py-32">
         <motion.div 
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
-          className="bg-primary border-cartoon shadow-[8px_8px_0_0_#000] rounded-3xl p-8 md:p-16 text-center relative overflow-hidden"
+          className="border-cartoon relative overflow-hidden rounded-3xl bg-primary p-5 text-center shadow-[5px_5px_0_0_#000] sm:p-8 md:p-16 md:shadow-[8px_8px_0_0_#000]"
         >
           {/* Striped overlay */}
           <div 
@@ -21,18 +21,18 @@ export function ContactSection() {
           />
 
           <div className="relative z-10">
-            <h2 className="text-4xl md:text-6xl font-display uppercase tracking-wide mb-6">
+            <h2 className="mb-5 font-display text-4xl uppercase tracking-wide md:mb-6 md:text-6xl">
               Send a Signal
             </h2>
             
-            <p className="font-sans font-bold text-lg md:text-xl mb-12 max-w-xl mx-auto leading-relaxed">
+            <p className="mx-auto mb-8 max-w-xl font-sans text-base font-bold leading-relaxed sm:text-lg md:mb-12 md:text-xl">
               Always open to collabs, internships, and interesting problems. Let's build the next great interface together.
             </p>
 
-            <div className="inline-block bg-white border-cartoon shadow-cartoon rounded-2xl p-4 md:p-8 transform rotate-1 hover:rotate-0 transition-transform duration-300">
+            <div className="border-cartoon inline-block w-full max-w-full rotate-1 rounded-2xl bg-white p-4 shadow-cartoon transition-transform duration-300 hover:rotate-0 md:w-auto md:p-8">
               <a 
                 href="mailto:mdluspo122604@gmail.com" 
-                className="text-2xl md:text-4xl font-display font-bold hover:text-primary transition-colors block mb-8"
+                className="mb-8 block break-all font-display text-lg font-bold leading-tight transition-colors hover:text-primary sm:text-2xl md:text-4xl"
               >
                 mdluspo122604@gmail.com
               </a>

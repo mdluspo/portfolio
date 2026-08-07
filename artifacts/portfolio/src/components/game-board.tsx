@@ -113,12 +113,13 @@ function randomDeploymentPoint(pageScroll = window.scrollY) {
   const pt = pointOnScreenPath(s);
   const pageWidth = Math.max(document.documentElement.scrollWidth, window.innerWidth);
   const heroHeight = window.innerHeight || 600;
+  const isCompact = window.innerWidth < 720;
   const offsetX = (Math.random() - 0.5) * 120;
   const aboveRoadOffset = 130 + Math.random() * 165;
-  const minX = Math.min(pageWidth - 110, Math.max(420, pageWidth * 0.52));
-  const maxX = Math.max(minX, pageWidth - 120);
+  const minX = isCompact ? 72 : Math.min(pageWidth - 110, Math.max(420, pageWidth * 0.52));
+  const maxX = isCompact ? Math.max(minX, pageWidth - 72) : Math.max(minX, pageWidth - 120);
   const minY = 115 + pageScroll;
-  const maxY = pageScroll + heroHeight * 0.57;
+  const maxY = pageScroll + heroHeight * (isCompact ? 0.62 : 0.57);
 
   return {
     x: clamp(pt.x + offsetX, minX, maxX),
@@ -1147,7 +1148,7 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
         <p className="text-center font-display text-[10px] uppercase tracking-widest text-gray-400 mb-2">
           Drag or tap a unit
         </p>
-        <div className="flex justify-center gap-2 overflow-x-auto px-1 pb-2 pt-2">
+        <div className="flex justify-start gap-2 overflow-x-auto px-1 pb-2 pt-2 sm:justify-center">
           {UNITS.map((unit) => {
             const isPlaced = placed.has(unit.key);
             const Icon = unit.icon;
@@ -1175,7 +1176,7 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
                 disabled={isPlaced}
                 aria-label={`Deploy ${unit.name}${unit.unlocks ? ` to unlock ${unit.unlocks}` : ""}`}
                 className={cn(
-                  "flex-shrink-0 w-20 h-24 flex flex-col items-center justify-center gap-1 rounded-lg border-[2.5px] border-black bg-white text-center transition-all duration-150",
+                  "flex-shrink-0 w-16 h-20 sm:w-20 sm:h-24 flex flex-col items-center justify-center gap-1 rounded-lg border-[2.5px] border-black bg-white text-center transition-all duration-150",
                   isPlaced
                     ? "opacity-40 grayscale cursor-not-allowed"
                     : "relative z-0 cursor-grab active:cursor-grabbing shadow-[2px_2px_0_0_#000] outline-none hover:-translate-y-1 hover:z-10 focus-visible:-translate-y-1 focus-visible:ring-4 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-white",
@@ -1183,18 +1184,18 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
               >
                 <div
                   className={cn(
-                    "w-10 h-10 rounded-lg border-[2px] border-black flex items-center justify-center shrink-0",
+                    "w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-[2px] border-black flex items-center justify-center shrink-0",
                     unit.color,
                   )}
                 >
                   {trayImage ? (
-                    <img src={trayImage} alt="" className="h-6 w-6 object-contain" draggable={false} />
+                    <img src={trayImage} alt="" className="h-5 w-5 object-contain sm:h-6 sm:w-6" draggable={false} />
                   ) : (
-                    <Icon size={20} className="text-black" />
+                    <Icon size={18} className="text-black sm:h-5 sm:w-5" />
                   )}
                 </div>
                 <div className="w-full px-1">
-                  <div className="font-display font-bold text-[11px] leading-[1.05]">{unit.name}</div>
+                  <div className="font-display font-bold text-[10px] leading-[1.05] sm:text-[11px]">{unit.name}</div>
                 </div>
               </button>
             );

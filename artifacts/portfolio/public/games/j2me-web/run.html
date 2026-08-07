@@ -8,6 +8,7 @@
 <style>
     html, body {
         height: 100%;
+        width: 100%;
     }
     body {
         margin: 0;
@@ -15,6 +16,7 @@
         font-family: sans;
         background: #000;
         overflow: hidden;
+        touch-action: none;
     }
     #screen-area {
         background-color: #000;
@@ -46,7 +48,7 @@
 
     .keypad-part {
         background-color: #222; /* Dark background for keypad areas */
-        padding: 8px;
+        padding: clamp(4px, 1.5vmin, 8px);
         display: flex; /* Use flex to center the grid */
         justify-content: center;
         align-items: center;
@@ -56,7 +58,7 @@
 
     .key-grid {
         display: grid;
-        gap: 6px; /* Space between keys */
+        gap: clamp(3px, 1.3vmin, 6px); /* Space between keys */
         width: 100%;
         height: 100%;
     }
@@ -78,7 +80,7 @@
         color: #e0e0e0; /* Light key text */
         border: 1px solid #555;
         border-radius: 5px;
-        font-size: 1.5em; /* Larger text */
+        font-size: clamp(1rem, 4.8vmin, 1.5em); /* Larger text */
         font-weight: bold;
         cursor: pointer;
         display: flex;
@@ -103,11 +105,11 @@
     }
 
     .arrow-key {
-        font-size: 2em; /* Make arrows bigger */
+        font-size: clamp(1.2rem, 6vmin, 2em); /* Make arrows bigger */
     }
 
     .ok-key {
-        font-size: 1.3em;
+        font-size: clamp(1rem, 4.2vmin, 1.3em);
     }
 
     /* Styles for specifically smaller keys */
@@ -167,12 +169,12 @@
     body.kbd-portrait #left-keys,
     body.kbd-portrait #right-keys {
         width: 50%;
-        height: 220px;
+        height: clamp(150px, 30dvh, 220px);
     }
 
     body.kbd-landscape #left-keys,
     body.kbd-landscape #right-keys {
-        width: 220px;
+        width: clamp(132px, 24dvw, 220px);
         height: 100%;
     }
 
@@ -183,12 +185,23 @@
     }
 
     body.kbd-portrait #screen-area {
-        bottom: 220px;
+        bottom: clamp(150px, 30dvh, 220px);
     }
 
     body.kbd-landscape #screen-area {
-        left: 220px;
-        right: 220px;
+        left: clamp(132px, 24dvw, 220px);
+        right: clamp(132px, 24dvw, 220px);
+    }
+
+    @media (max-width: 380px) {
+        .key span {
+            display: none;
+        }
+
+        .small-key {
+            width: 82%;
+            height: 82%;
+        }
     }
 
 </style>
@@ -216,14 +229,14 @@
     <div id="right-keys" class="keypad-part">
          <div class="key-grid right-grid">
             <button data-key="F1" class="key">L</button>
-            <button data-key="ArrowUp" class="key arrow-key" aria-label="Up">↑</button>
+            <button data-key="ArrowUp" class="key arrow-key" aria-label="Up">Up</button>
             <button data-key="F2" class="key">R</button>
-            <button data-key="ArrowLeft" class="key arrow-key" aria-label="Left">←</button>
+            <button data-key="ArrowLeft" class="key arrow-key" aria-label="Left">Left</button>
             <button data-key="Enter" class="key ok-key">OK</button>
-            <button data-key="ArrowRight" class="key arrow-key" aria-label="Right">→</button>
+            <button data-key="ArrowRight" class="key arrow-key" aria-label="Right">Right</button>
             <button data-key="Escape" class="key small-key small-key-left">Esc</button>
-            <button data-key="ArrowDown" class="key arrow-key" aria-label="Down">↓</button>
-            <button data-key="Maximize" class="key small-key small-key-right" aria-label="Maximize">⛶</button>
+            <button data-key="ArrowDown" class="key arrow-key" aria-label="Down">Down</button>
+            <button data-key="Maximize" class="key small-key small-key-right" aria-label="Maximize">Full</button>
         </div>
     </div>
     <script src="https://cjrtnc.leaningtech.com/20260317_2978/loader.js"></script>

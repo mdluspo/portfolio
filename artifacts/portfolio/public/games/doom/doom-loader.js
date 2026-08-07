@@ -22,6 +22,27 @@ const doomKeyMap = {
   d: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
   e: { key: " ", code: "Space", keyCode: 32 },
 };
+const doomTouchKeyMap = {
+  ArrowUp: { key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
+  ArrowLeft: { key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 },
+  ArrowDown: { key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
+  ArrowRight: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
+  Control: { key: "Control", code: "ControlLeft", keyCode: 17 },
+  Space: { key: " ", code: "Space", keyCode: 32 },
+  Shift: { key: "Shift", code: "ShiftLeft", keyCode: 16 },
+  Escape: { key: "Escape", code: "Escape", keyCode: 27 },
+};
+
+function dispatchDoomKey(type, mapped) {
+  canvas?.dispatchEvent(
+    new KeyboardEvent(type, {
+      ...mapped,
+      which: mapped.keyCode,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+}
 
 function setStatus(text) {
   if (statusEl) statusEl.textContent = text;
@@ -83,14 +104,7 @@ function startDoom() {
       const mapped = doomKeyMap[event.key.toLowerCase()];
       if (!mapped || event.repeat) return;
       event.preventDefault();
-      canvas?.dispatchEvent(
-        new KeyboardEvent("keydown", {
-          ...mapped,
-          which: mapped.keyCode,
-          bubbles: true,
-          cancelable: true,
-        }),
-      );
+      dispatchDoomKey("keydown", mapped);
     },
     true,
   );
@@ -101,14 +115,7 @@ function startDoom() {
       const mapped = doomKeyMap[event.key.toLowerCase()];
       if (!mapped) return;
       event.preventDefault();
-      canvas?.dispatchEvent(
-        new KeyboardEvent("keyup", {
-          ...mapped,
-          which: mapped.keyCode,
-          bubbles: true,
-          cancelable: true,
-        }),
-      );
+      dispatchDoomKey("keyup", mapped);
     },
     true,
   );
@@ -116,6 +123,29 @@ function startDoom() {
   window.addEventListener("message", (event) => {
     if (event.data !== "resume-game") return;
     canvas?.focus();
+  });
+
+  document.querySelectorAll("[data-doom-key]").forEach((button) => {
+    const mapped = doomTouchKeyMap[button.dataset.doomKey];
+    if (!mapped) return;
+
+    const press = (event) => {
+      event.preventDefault();
+      button.classList.add("is-pressed");
+      canvas?.focus();
+      dispatchDoomKey("keydown", mapped);
+    };
+
+    const release = (event) => {
+      event.preventDefault();
+      button.classList.remove("is-pressed");
+      dispatchDoomKey("keyup", mapped);
+    };
+
+    button.addEventListener("pointerdown", press);
+    button.addEventListener("pointerup", release);
+    button.addEventListener("pointercancel", release);
+    button.addEventListener("pointerleave", release);
   });
 
   const script = document.createElement("script");
