@@ -145,6 +145,7 @@
     max-width: 100%;
     overflow-x: hidden;
     overflow-x: clip;
+    overscroll-behavior-y: none;
   }
 
   body {
@@ -569,7 +570,7 @@
 
 @media (max-width: 720px) {
   .skills-arsenal-stage {
-    min-height: 500px;
+    min-height: 460px;
     overflow: hidden;
   }
   .skills-floating-copy {
@@ -584,18 +585,18 @@
     max-width: 18rem;
   }
   .skills-keyboard-scene {
-    min-height: 400px;
+    min-height: 330px;
     perspective: 760px;
   }
   .skills-keyboard-deck {
-    width: min(94vw, 460px);
-    aspect-ratio: 1.12;
-    margin-top: 6.75rem;
+    width: min(128vw, 620px);
+    aspect-ratio: 2.28;
+    margin-top: 6.4rem;
   }
   .skills-key-grid {
-    inset: 20% 11% 26%;
-    grid-template-rows: repeat(3, minmax(30px, 1fr));
-    gap: 5px;
+    inset: 18% 10% 25%;
+    grid-template-rows: repeat(3, minmax(36px, 1fr));
+    gap: clamp(5px, 1.7vw, 9px);
   }
   .skills-keyboard-base {
     border-width: 3px;
@@ -624,8 +625,8 @@
       0 10px 10px hsl(0 0% 0% / 0.14);
   }
   .skill-key-top svg {
-    width: clamp(15px, 5vw, 22px);
-    height: clamp(15px, 5vw, 22px);
+    width: clamp(18px, 6vw, 26px);
+    height: clamp(18px, 6vw, 26px);
   }
   .skill-key-front {
     bottom: -6px;
@@ -633,16 +634,16 @@
   }
   .skills-deck-copy-main {
     top: 7%;
-    right: 16%;
+    right: 13%;
   }
   .skills-deck-copy-side {
-    left: 7%;
-    top: 24%;
-    max-width: 7.75rem;
+    left: 6%;
+    top: 23%;
+    max-width: 8.6rem;
   }
   .skills-deck-copy-side strong {
-    max-width: 7.75rem;
-    font-size: 1.1rem;
+    max-width: 8.6rem;
+    font-size: 1.18rem;
   }
   .skills-deck-copy-side strong.skills-side-label-medium {
     font-size: 1rem;

@@ -170,6 +170,7 @@ export function ProjectsSection() {
   }, []);
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = { x: event.clientX, offset: offsetRef.current };
     didDragRef.current = false;
@@ -258,7 +259,6 @@ export function ProjectsSection() {
                   className={cn("project-channel-tile", project.color)}
                   draggable={false}
                   onPointerDown={(event) => {
-                    event.stopPropagation();
                     didDragRef.current = false;
                   }}
                   onDragStart={(event) => event.preventDefault()}

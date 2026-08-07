@@ -281,7 +281,7 @@ function TowerVisual({
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute bottom-full mb-3 w-40 bg-white border-[2.5px] border-black px-3 py-2 rounded-xl shadow-[3px_3px_0_0_#000] text-[11px] leading-tight font-sans font-bold text-center z-30"
+          className="absolute bottom-full mb-2 w-32 bg-white border-[2.5px] border-black px-2 py-1.5 rounded-xl shadow-[3px_3px_0_0_#000] text-[10px] leading-tight font-sans font-bold text-center z-30 sm:mb-3 sm:w-40 sm:px-3 sm:py-2 sm:text-[11px]"
         >
           {meMessage}
           <div className="absolute -bottom-[9px] left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-b-[2.5px] border-r-[2.5px] border-black rotate-45" />
@@ -290,7 +290,7 @@ function TowerVisual({
 
       <div
         className={cn(
-          "w-16 h-20 rounded-xl border-[2.5px] border-black flex items-center justify-center bg-white",
+          "w-11 h-14 rounded-xl border-[2.5px] border-black flex items-center justify-center bg-white sm:w-16 sm:h-20",
           isPreview ? "shadow-[5px_5px_0_0_#000]" : "shadow-[3px_3px_0_0_#000]",
           unit.color,
         )}
@@ -309,26 +309,26 @@ function TowerVisual({
               <img
                 src={towerImage}
                 alt=""
-                className={cn(unit.key === "me" ? "h-[76px] w-[62px]" : "h-11 w-11", "object-contain")}
+                className={cn(unit.key === "me" ? "h-[52px] w-[42px] sm:h-[76px] sm:w-[62px]" : "h-8 w-8 sm:h-11 sm:w-11", "object-contain")}
                 draggable={false}
               />
             )}
 
             {!towerImage && !shouldReplaceIcon && unit.key !== "frontend" && (
               <Icon
-                size={34}
-                className="text-black"
+                size={24}
+                className="text-black sm:h-[34px] sm:w-[34px]"
               />
             )}
 
             {unit.key === "frontend" && !shouldReplaceIcon && (
-              <div className="font-display text-2xl font-black leading-none">
+              <div className="font-display text-lg font-black leading-none sm:text-2xl">
                 &lt;/&gt;
               </div>
             )}
 
             {unit.key === "frontend" && shouldReplaceIcon && (
-              <div className="font-display text-2xl font-black leading-none">
+              <div className="font-display text-lg font-black leading-none sm:text-2xl">
                 {ammo === 2 ? "/>" : ammo === 1 ? ">" : ""}
               </div>
             )}
@@ -336,7 +336,7 @@ function TowerVisual({
         </div>
       </div>
 
-      <div className="mt-2 whitespace-nowrap bg-white border-[2px] border-black px-2 py-0.5 rounded-lg text-[10px] font-display font-bold shadow-[1px_1px_0_0_#000]">
+      <div className="mt-1 whitespace-nowrap bg-white border-[2px] border-black px-1.5 py-0.5 rounded-lg text-[9px] font-display font-bold shadow-[1px_1px_0_0_#000] sm:mt-2 sm:px-2 sm:text-[10px]">
         {unit.name}
       </div>
 
@@ -344,7 +344,7 @@ function TowerVisual({
         <button
           onPointerDown={(e) => e.stopPropagation()}
           onClick={onRemove}
-          className="absolute -top-3 -right-3 w-7 h-7 bg-destructive text-white border-[2px] border-black rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity outline-none hover:scale-110 focus-visible:opacity-100 focus-visible:ring-4 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-white z-20"
+          className="absolute -top-3 -right-3 w-7 h-7 bg-destructive text-white border-[2px] border-black rounded-full flex items-center justify-center opacity-100 transition-opacity outline-none hover:scale-110 focus-visible:opacity-100 focus-visible:ring-4 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-white z-20 sm:opacity-0 sm:group-hover:opacity-100"
           aria-label={`Remove ${unit.name}`}
         >
           <X size={14} strokeWidth={3} />
@@ -722,7 +722,12 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
 
   const startDrag = (e: React.PointerEvent, key: TowerKey, fromTray = false) => {
     if (e.button !== 0) return;
+    if (e.pointerType === "touch") {
+      e.preventDefault();
+      return;
+    }
     const rect = e.currentTarget.getBoundingClientRect();
+    e.preventDefault();
     setDragging({
       key,
       x: e.clientX,
@@ -739,6 +744,7 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
     if (e.button !== 0) return;
     e.stopPropagation();
     e.preventDefault();
+    if (e.pointerType === "touch") return;
     const now = performance.now();
     setDraggingEnemy({
       id: enemy.id,
@@ -1106,7 +1112,7 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
           return (
             <div
               key={tower.key}
-              className="fixed left-0 top-0 z-40 cursor-grab active:cursor-grabbing"
+              className="fixed left-0 top-0 z-40 touch-none sm:cursor-grab sm:active:cursor-grabbing"
               style={{
                 opacity: dragging?.key === tower.key ? 0 : 1,
                 transform: `translate3d(${tower.x}px, ${tower.y - scrollY}px, 0) translate(-50%, -50%) scale(${
@@ -1141,14 +1147,14 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
       <div
         ref={trayRef}
         className={cn(
-          "absolute bottom-5 left-1/2 z-30 w-full -translate-x-1/2 bg-transparent px-3 py-3 transition-opacity duration-300",
+          "absolute bottom-3 left-1/2 z-30 w-full -translate-x-1/2 bg-transparent px-2 py-2 transition-opacity duration-300 sm:bottom-5 sm:px-3 sm:py-3",
           allOthers && "opacity-45 hover:opacity-100 focus-within:opacity-100",
         )}
       >
-        <p className="text-center font-display text-[10px] uppercase tracking-widest text-gray-400 mb-2">
+        <p className="mb-1 text-center font-display text-[9px] uppercase tracking-widest text-gray-400 sm:mb-2 sm:text-[10px]">
           Drag or tap a unit
         </p>
-        <div className="flex justify-start gap-2 overflow-x-auto px-1 pb-2 pt-2 sm:justify-center">
+        <div className="flex justify-start gap-2 overflow-x-auto px-1 pb-1 pt-1 sm:justify-center sm:pb-2 sm:pt-2">
           {UNITS.map((unit) => {
             const isPlaced = placed.has(unit.key);
             const Icon = unit.icon;
@@ -1176,26 +1182,26 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
                 disabled={isPlaced}
                 aria-label={`Deploy ${unit.name}${unit.unlocks ? ` to unlock ${unit.unlocks}` : ""}`}
                 className={cn(
-                  "flex-shrink-0 w-16 h-20 sm:w-20 sm:h-24 flex flex-col items-center justify-center gap-1 rounded-lg border-[2.5px] border-black bg-white text-center transition-all duration-150",
+                  "flex-shrink-0 w-14 h-[4.5rem] sm:w-20 sm:h-24 flex flex-col items-center justify-center gap-1 rounded-lg border-[2.5px] border-black bg-white text-center transition-all duration-150",
                   isPlaced
                     ? "opacity-40 grayscale cursor-not-allowed"
-                    : "relative z-0 cursor-grab active:cursor-grabbing shadow-[2px_2px_0_0_#000] outline-none hover:-translate-y-1 hover:z-10 focus-visible:-translate-y-1 focus-visible:ring-4 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+                    : "relative z-0 touch-manipulation shadow-[2px_2px_0_0_#000] outline-none hover:-translate-y-1 hover:z-10 focus-visible:-translate-y-1 focus-visible:ring-4 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:cursor-grab sm:active:cursor-grabbing",
                 )}
               >
                 <div
                   className={cn(
-                    "w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-[2px] border-black flex items-center justify-center shrink-0",
+                    "w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-[2px] border-black flex items-center justify-center shrink-0",
                     unit.color,
                   )}
                 >
                   {trayImage ? (
-                    <img src={trayImage} alt="" className="h-5 w-5 object-contain sm:h-6 sm:w-6" draggable={false} />
+                    <img src={trayImage} alt="" className="h-4 w-4 object-contain sm:h-6 sm:w-6" draggable={false} />
                   ) : (
-                    <Icon size={18} className="text-black sm:h-5 sm:w-5" />
+                    <Icon size={16} className="text-black sm:h-5 sm:w-5" />
                   )}
                 </div>
                 <div className="w-full px-1">
-                  <div className="font-display font-bold text-[10px] leading-[1.05] sm:text-[11px]">{unit.name}</div>
+                  <div className="font-display font-bold text-[9px] leading-[1.05] sm:text-[11px]">{unit.name}</div>
                 </div>
               </button>
             );
