@@ -53,15 +53,15 @@ export function HeroSection() {
   };
 
   return (
-    <section className="relative h-[100dvh] bg-white overflow-x-hidden overflow-y-visible">
+    <section className="relative h-[100dvh] min-h-[620px] overflow-x-hidden overflow-y-visible bg-white sm:min-h-[680px] lg:min-h-0">
       <GameBoard />
-        {/* LEFT — pure white, no card, no box, no border */}
-      <div className="pointer-events-none relative z-10 flex h-full w-full flex-col justify-center px-10 py-12 lg:w-[42%] lg:px-16">
+        {/* Left side intro copy. */}
+      <div className="pointer-events-none relative z-10 flex h-full w-full max-w-[34rem] flex-col justify-start px-5 pb-36 pt-8 sm:px-8 sm:py-12 md:justify-center lg:w-[42%] lg:px-16">
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-6xl md:text-7xl xl:text-8xl font-display uppercase tracking-wide leading-none mb-3"
+          className="mb-3 font-display text-[clamp(3.1rem,16vw,4.8rem)] uppercase leading-none tracking-wide md:text-7xl xl:text-8xl"
         >
           Martin Luspo
         </motion.h1>
@@ -70,12 +70,12 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.25 }}
-          className="text-xl md:text-2xl font-sans font-bold text-primary mb-4"
+          className="mb-4 font-sans text-lg font-bold text-primary sm:text-xl md:text-2xl"
         >
           Frontend &amp; UI/UX Developer
         </motion.h2>
 
-        <div className="pointer-events-auto mb-8">
+        <div className="pointer-events-auto mb-6 sm:mb-8">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -85,7 +85,7 @@ export function HeroSection() {
             <a
               href="#contact"
               onClick={openContact}
-              className="border-cartoon bg-white px-5 py-2 rounded-lg font-display font-bold text-sm uppercase shadow-cartoon outline-none hover:-translate-y-1 focus-visible:ring-4 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-white transition-transform"
+              className="border-cartoon rounded-lg bg-white px-4 py-2 font-display text-xs font-bold uppercase shadow-cartoon outline-none transition-transform hover:-translate-y-1 focus-visible:ring-4 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:px-5 sm:text-sm"
             >
               Contact
             </a>
@@ -93,14 +93,14 @@ export function HeroSection() {
               href="/resume.pdf"
               target="_blank"
               rel="noopener noreferrer"
-              className="border-cartoon bg-white px-5 py-2 rounded-lg font-display font-bold text-sm uppercase shadow-cartoon outline-none hover:-translate-y-1 focus-visible:ring-4 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-white transition-transform"
+              className="border-cartoon rounded-lg bg-white px-4 py-2 font-display text-xs font-bold uppercase shadow-cartoon outline-none transition-transform hover:-translate-y-1 focus-visible:ring-4 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:px-5 sm:text-sm"
             >
               Resume
             </a>
           </motion.div>
         </div>
 
-        <div className="space-y-3 font-sans font-semibold text-gray-700 text-lg md:text-xl">
+        <div className="space-y-2 font-sans text-base font-semibold leading-snug text-gray-700 sm:space-y-3 md:text-xl">
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -113,13 +113,13 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.52 }}
           >
-            Studying design &amp; code — obsessed with details.
+            Studying design and code - obsessed with details.
           </motion.p>
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.64 }}
-            className="text-gray-400 text-base"
+            className="text-sm text-gray-400 sm:text-base"
           >
             Drag or tap units to unlock sections.
           </motion.p>
@@ -134,7 +134,7 @@ export function HeroSection() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.42 }}
-        className="pointer-events-auto absolute bottom-6 right-6 z-50 font-display text-base font-black uppercase tracking-widest text-black outline-none transition-transform hover:-translate-y-1 hover:text-primary focus-visible:ring-4 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+        className="pointer-events-auto absolute bottom-3 right-4 z-50 font-display text-sm font-black uppercase tracking-widest text-black outline-none transition-transform hover:-translate-y-1 hover:text-primary focus-visible:ring-4 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:bottom-6 sm:right-6 sm:text-base"
       >
         {allPlaced ? "Clear All" : "Skip"}
       </motion.button>

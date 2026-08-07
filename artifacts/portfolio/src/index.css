@@ -569,28 +569,67 @@
 
 @media (max-width: 720px) {
   .skills-arsenal-stage {
-    min-height: 560px;
+    min-height: 500px;
+    overflow: hidden;
   }
   .skills-floating-copy {
-    left: 0.25rem;
+    left: 0;
     top: 0;
-    max-width: 88vw;
+    max-width: 92vw;
+  }
+  .skills-floating-copy h3 {
+    font-size: clamp(1.85rem, 11vw, 3rem);
+  }
+  .skills-floating-copy span {
+    max-width: 18rem;
   }
   .skills-keyboard-scene {
-    min-height: 460px;
+    min-height: 400px;
+    perspective: 760px;
   }
   .skills-keyboard-deck {
-    width: min(104vw, 560px);
-    aspect-ratio: 1.32;
-    margin-top: 7.5rem;
+    width: min(94vw, 460px);
+    aspect-ratio: 1.12;
+    margin-top: 6.75rem;
   }
   .skills-key-grid {
-    inset: 20% 12% 25%;
-    grid-template-rows: repeat(3, minmax(34px, 1fr));
-    gap: 6px;
+    inset: 20% 11% 26%;
+    grid-template-rows: repeat(3, minmax(30px, 1fr));
+    gap: 5px;
+  }
+  .skills-keyboard-base {
+    border-width: 3px;
+    border-radius: 20px;
+    box-shadow:
+      inset 0 -14px 0 hsl(150 7% 72%),
+      inset 0 -21px 0 hsl(0 0% 100% / 0.25),
+      0 7px 0 hsl(150 6% 62%),
+      0 12px 0 hsl(0 0% 0%),
+      0 22px 28px hsl(0 0% 0% / 0.18);
+  }
+  .skill-key::before,
+  .skill-key-top,
+  .skill-key-front,
+  .skill-key-cap::before {
+    border-width: 2px;
   }
   .skill-key-top {
-    border-radius: 13px;
+    inset: 0 0 7px;
+    border-radius: 10px;
+    box-shadow:
+      inset -4px -6px 0 hsl(0 0% 0% / 0.11),
+      inset 3px 3px 0 hsl(0 0% 100% / 0.96),
+      0 4px 0 hsl(150 7% 70%),
+      0 7px 0 hsl(0 0% 0%),
+      0 10px 10px hsl(0 0% 0% / 0.14);
+  }
+  .skill-key-top svg {
+    width: clamp(15px, 5vw, 22px);
+    height: clamp(15px, 5vw, 22px);
+  }
+  .skill-key-front {
+    bottom: -6px;
+    height: 20px;
   }
   .skills-deck-copy-main {
     top: 7%;
@@ -945,18 +984,33 @@
 }
 
 @media (max-width: 760px) {
+  .project-console {
+    min-height: 0;
+    overflow: visible;
+  }
+
   .project-preview {
     grid-template-columns: 1fr;
-    min-height: 590px;
-    padding-bottom: 10.5rem;
+    min-height: 0;
+    gap: 1.25rem;
+    padding: 0.25rem 0 8.5rem;
   }
 
   .project-preview-image {
-    min-height: 170px;
+    min-height: clamp(150px, 42vw, 190px);
+  }
+
+  .project-preview-copy h3 {
+    font-size: clamp(2.2rem, 14vw, 3.3rem);
+  }
+
+  .project-preview-copy p {
+    font-size: 1rem;
   }
 
   .project-channel-viewport {
     height: 96px;
+    bottom: 0;
   }
 
   .project-channel-tile {
