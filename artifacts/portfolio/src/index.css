@@ -570,8 +570,8 @@
 
 @media (max-width: 720px) {
   .skills-arsenal-stage {
-    min-height: 460px;
-    overflow: hidden;
+    min-height: 500px;
+    overflow: visible;
   }
   .skills-floating-copy {
     left: 0;
@@ -585,13 +585,14 @@
     max-width: 18rem;
   }
   .skills-keyboard-scene {
-    min-height: 330px;
+    min-height: 370px;
     perspective: 760px;
+    overflow: visible;
   }
   .skills-keyboard-deck {
-    width: min(128vw, 620px);
-    aspect-ratio: 2.28;
-    margin-top: 6.4rem;
+    width: min(108vw, 560px);
+    aspect-ratio: 2.42;
+    margin-top: 7rem;
   }
   .skills-key-grid {
     inset: 18% 10% 25%;

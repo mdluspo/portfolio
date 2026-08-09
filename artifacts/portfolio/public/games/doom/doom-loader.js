@@ -45,6 +45,22 @@ function dispatchDoomKey(type, mapped) {
   );
 }
 
+function setPressedKeys(nextKeys, activeKeys) {
+  activeKeys.forEach((key) => {
+    if (nextKeys.has(key)) return;
+    const mapped = doomTouchKeyMap[key];
+    if (mapped) dispatchDoomKey("keyup", mapped);
+    activeKeys.delete(key);
+  });
+
+  nextKeys.forEach((key) => {
+    if (activeKeys.has(key)) return;
+    const mapped = doomTouchKeyMap[key];
+    if (mapped) dispatchDoomKey("keydown", mapped);
+    activeKeys.add(key);
+  });
+}
+
 function setStatus(text) {
   if (statusEl) statusEl.textContent = text;
 }
@@ -149,6 +165,69 @@ function startDoom() {
     button.addEventListener("pointercancel", release);
     button.addEventListener("pointerleave", release);
   });
+
+  const joystick = document.querySelector("[data-doom-joystick]");
+  if (joystick) {
+    const activeMovementKeys = new Set();
+    const maxTravel = 34;
+    const deadzone = 14;
+
+    const updateJoystick = (event) => {
+      const rect = joystick.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const rawX = event.clientX - centerX;
+      const rawY = event.clientY - centerY;
+      const distance = Math.hypot(rawX, rawY);
+      const limited = Math.min(maxTravel, distance);
+      const unitX = distance > 0 ? rawX / distance : 0;
+      const unitY = distance > 0 ? rawY / distance : 0;
+      const stickX = unitX * limited;
+      const stickY = unitY * limited;
+      const nextKeys = new Set();
+
+      joystick.style.setProperty("--stick-x", `${stickX}px`);
+      joystick.style.setProperty("--stick-y", `${stickY}px`);
+
+      if (distance > deadzone) {
+        if (rawY < -deadzone) nextKeys.add("ArrowUp");
+        if (rawY > deadzone) nextKeys.add("ArrowDown");
+        if (rawX < -deadzone) nextKeys.add("ArrowLeft");
+        if (rawX > deadzone) nextKeys.add("ArrowRight");
+      }
+
+      setPressedKeys(nextKeys, activeMovementKeys);
+    };
+
+    const releaseJoystick = (event) => {
+      event?.preventDefault();
+      joystick.classList.remove("is-active");
+      joystick.style.setProperty("--stick-x", "0px");
+      joystick.style.setProperty("--stick-y", "0px");
+      setPressedKeys(new Set(), activeMovementKeys);
+      if (event && joystick.hasPointerCapture(event.pointerId)) {
+        joystick.releasePointerCapture(event.pointerId);
+      }
+    };
+
+    joystick.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      canvas?.focus();
+      joystick.setPointerCapture(event.pointerId);
+      joystick.classList.add("is-active");
+      updateJoystick(event);
+    });
+
+    joystick.addEventListener("pointermove", (event) => {
+      if (!joystick.classList.contains("is-active")) return;
+      event.preventDefault();
+      updateJoystick(event);
+    });
+
+    joystick.addEventListener("pointerup", releaseJoystick);
+    joystick.addEventListener("pointercancel", releaseJoystick);
+    joystick.addEventListener("lostpointercapture", releaseJoystick);
+  }
 
   const script = document.createElement("script");
   script.src = "/games/doom/websockets-doom.js";
