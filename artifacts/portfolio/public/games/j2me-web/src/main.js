@@ -31,6 +31,65 @@ let lastTouchPoint = null;
 
 window.evtQueue = evtQueue;
 
+function createSilentMidiPlayer() {
+    let volume = 0;
+    return {
+        addEventListener() {},
+        removeEventListener() {},
+        async setSequence() { return 0; },
+        play() {},
+        loop() {},
+        stop() {},
+        shortEvent() {},
+        async getPosition() { return 0; },
+        seek() {},
+        close() {},
+        get duration() { return 0; },
+        get volume() { return volume; },
+        set volume(nextVolume) { volume = nextVolume; },
+    };
+}
+
+function createSilentLibMidi() {
+    const midiPlayer = createSilentMidiPlayer();
+    return {
+        initialized: true,
+        midiPlayer,
+        async init() {},
+        async close() {},
+    };
+}
+
+function createSilentMediaPlayer() {
+    let volume = 0;
+    return {
+        addEventListener() {},
+        removeEventListener() {},
+        async load() { return false; },
+        play() {},
+        setLooping() {},
+        stop() {},
+        seek() {},
+        close() {},
+        configureVideo() {},
+        async getSnapshot() { return null; },
+        get position() { return 0; },
+        get duration() { return -1; },
+        get videoWidth() { return 0; },
+        get videoHeight() { return 0; },
+        get volume() { return volume; },
+        set volume(nextVolume) { volume = nextVolume; },
+    };
+}
+
+function createSilentLibMedia() {
+    return {
+        createMediaPlayer() {
+            return createSilentMediaPlayer();
+        },
+    };
+}
+
 function displayPointFromClient(clientX, clientY) {
     const rect = display.getBoundingClientRect();
     const scaleX = screenCtx.canvas.width / Math.max(1, rect.width);
@@ -271,16 +330,46 @@ function setFaviconFromBuffer(arrayBuffer) {
 async function ensureAppInstalled(lib, appId) {
     let appFile = null;
     const reinstall = sp.get('reinstall') === '1';
+    const resetInstall = sp.get('reset') === '1';
+    const launcherUtil = await lib.pl.zb3.freej2me.launcher.LauncherUtil;
+
+    if (resetInstall) {
+        try {
+            await launcherUtil.uninstallApp(appId);
+        } catch (error) {
+            console.warn("Unable to clear existing app before reinstall; continuing.", error);
+        }
+    }
+
     try {
         appFile = await cjFileBlob("/files/" + appId + "/app.jar");
     } catch (error) {
         console.warn("Unable to inspect installed app, reinstalling from bundle.", error);
     }
 
-    if (reinstall || !appFile) {
-        const launcherUtil = await lib.pl.zb3.freej2me.launcher.LauncherUtil;
-
+    if (resetInstall || reinstall || !appFile) {
         await launcherUtil.installFromBundle(cheerpjWebRoot + "/apps/", appId);
+    }
+}
+
+async function initAudioBridge() {
+    if (sp.get('sound') === '0') {
+        window.libmidi = createSilentLibMidi();
+        window.libmedia = createSilentLibMedia();
+        return;
+    }
+
+    try {
+        window.libmidi = new LibMidi(createUnlockingAudioContext());
+        await window.libmidi.init();
+        window.libmidi.midiPlayer?.addEventListener('end-of-media', e => {
+            window.evtQueue.queueEvent({kind: 'player-eom', player: e.target});
+        });
+        window.libmedia = new LibMedia();
+    } catch (error) {
+        console.warn("Audio bridge failed; continuing with silent media.", error);
+        window.libmidi = createSilentLibMidi();
+        window.libmedia = createSilentLibMedia();
     }
 }
 
@@ -292,12 +381,7 @@ async function init() {
 
     setListeners();
 
-    window.libmidi = new LibMidi(createUnlockingAudioContext());
-    await window.libmidi.init();
-    window.libmidi.midiPlayer.addEventListener('end-of-media', e => {
-        window.evtQueue.queueEvent({kind: 'player-eom', player: e.target});
-    })
-    window.libmedia = new LibMedia();
+    await initAudioBridge();
 
     await cheerpjInit({
         enableDebug: false,

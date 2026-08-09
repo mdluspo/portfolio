@@ -297,7 +297,7 @@ function SkillLogo({ skill }: { skill: SkillKey }) {
 export function SkillsSection() {
   const [activeSkill, setActiveSkill] = useState<SkillKey>(SKILL_KEYS[0]);
   const [keyboardView, setKeyboardView] = useState(() => ({
-    scale: typeof window !== "undefined" && window.innerWidth < 720 ? 0.72 : 1,
+    scale: typeof window !== "undefined" && window.innerWidth < 720 ? 0.58 : 1,
     rotateX: typeof window !== "undefined" && window.innerWidth < 720 ? 18 : 24,
     rotateY: 0,
   }));
@@ -383,8 +383,8 @@ export function SkillsSection() {
       const points = Array.from(keyboardPointersRef.current.values());
       const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
       const isCompact = window.innerWidth < 720;
-      const minScale = isCompact ? 0.72 : 0.72;
-      const maxScale = isCompact ? 1.42 : 1.18;
+      const minScale = isCompact ? 0.52 : 0.72;
+      const maxScale = isCompact ? 1.26 : 1.18;
       setKeyboardView((current) => ({
         ...current,
         scale: Math.min(maxScale, Math.max(minScale, pinchDragRef.current!.scale * (distance / pinchDragRef.current!.distance))),
@@ -448,7 +448,7 @@ export function SkillsSection() {
                 className="skills-keyboard-reset"
                 aria-label="Reset keyboard view"
                 onClick={() => setKeyboardView({
-                  scale: window.innerWidth < 720 ? 0.72 : 1,
+                  scale: window.innerWidth < 720 ? 0.58 : 1,
                   rotateX: window.innerWidth < 720 ? 18 : 24,
                   rotateY: 0,
                 })}
