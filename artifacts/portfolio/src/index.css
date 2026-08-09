@@ -570,7 +570,7 @@
 
 @media (max-width: 720px) {
   .skills-arsenal-stage {
-    min-height: 360px;
+    min-height: 330px;
     overflow: visible;
   }
   .skills-floating-copy {
@@ -586,23 +586,23 @@
     font-size: clamp(0.74rem, 3.4vw, 0.95rem);
   }
   .skills-keyboard-scene {
-    min-height: 255px;
+    min-height: 220px;
     perspective: 760px;
     overflow: visible;
   }
   .skills-keyboard-deck {
-    width: min(94vw, 430px);
+    width: min(86vw, 350px);
     aspect-ratio: 2.78;
-    margin-top: 5.15rem;
+    margin-top: 4.55rem;
   }
   .skills-key-grid {
-    inset: 18% 10% 25%;
-    grid-template-rows: repeat(3, minmax(30px, 1fr));
-    gap: clamp(4px, 1.4vw, 7px);
+    inset: 19% 11% 27%;
+    grid-template-rows: repeat(3, minmax(24px, 1fr));
+    gap: clamp(3px, 1vw, 5px);
   }
   .skills-keyboard-base {
     border-width: 3px;
-    border-radius: 20px;
+    border-radius: 16px;
     box-shadow:
       inset 0 -14px 0 hsl(150 7% 72%),
       inset 0 -21px 0 hsl(0 0% 100% / 0.25),
@@ -618,21 +618,34 @@
   }
   .skill-key-top {
     inset: 0 0 7px;
-    border-radius: 10px;
+    border-radius: 8px;
     box-shadow:
-      inset -4px -6px 0 hsl(0 0% 0% / 0.11),
+      inset -4px -5px 0 hsl(0 0% 0% / 0.11),
       inset 3px 3px 0 hsl(0 0% 100% / 0.96),
-      0 4px 0 hsl(150 7% 70%),
-      0 7px 0 hsl(0 0% 0%),
-      0 10px 10px hsl(0 0% 0% / 0.14);
+      0 3px 0 hsl(150 7% 70%),
+      0 5px 0 hsl(0 0% 0%),
+      0 9px 9px hsl(0 0% 0% / 0.13);
   }
   .skill-key-top svg {
-    width: clamp(18px, 6vw, 26px);
-    height: clamp(18px, 6vw, 26px);
+    width: clamp(14px, 4.4vw, 20px);
+    height: clamp(14px, 4.4vw, 20px);
+  }
+  .skill-key-top span {
+    font-size: clamp(0.56rem, 2.8vw, 0.78rem);
   }
   .skill-key-front {
-    bottom: -6px;
-    height: 20px;
+    bottom: -5px;
+    height: 17px;
+    border-radius: 0 0 7px 7px;
+  }
+  .skill-key::before {
+    bottom: -8px;
+    border-radius: 9px;
+  }
+  .skill-key-cap::before {
+    bottom: -8px;
+    height: 14px;
+    border-radius: 0 0 7px 7px;
   }
   .skills-deck-copy-main {
     top: 7%;
@@ -645,19 +658,19 @@
   }
   .skills-deck-copy-side strong {
     max-width: 8.6rem;
-    font-size: 1.18rem;
-  }
-  .skills-deck-copy-side strong.skills-side-label-medium {
     font-size: 1rem;
   }
+  .skills-deck-copy-side strong.skills-side-label-medium {
+    font-size: 0.86rem;
+  }
   .skills-deck-copy-side strong.skills-side-label-frameworks {
-    font-size: 0.98rem;
+    font-size: 0.82rem;
   }
   .skills-deck-copy-side strong.skills-side-label-long {
-    font-size: 1.02rem;
+    font-size: 0.84rem;
   }
   .skills-deck-copy-side strong.skills-side-label-ai {
-    font-size: 0.98rem;
+    font-size: 0.82rem;
   }
   .skills-deck-copy-side strong.skills-side-label-compact {
     font-size: 1.18rem;
