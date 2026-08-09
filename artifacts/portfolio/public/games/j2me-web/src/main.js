@@ -269,7 +269,12 @@ function setFaviconFromBuffer(arrayBuffer) {
 }
 
 async function ensureAppInstalled(lib, appId) {
-    const appFile = await cjFileBlob(appId + "/app.jar");
+    let appFile = null;
+    try {
+        appFile = await cjFileBlob("/files/" + appId + "/app.jar");
+    } catch (error) {
+        console.warn("Unable to inspect installed app, reinstalling from bundle.", error);
+    }
 
     if (!appFile) {
         const launcherUtil = await lib.pl.zb3.freej2me.launcher.LauncherUtil;
@@ -381,17 +386,19 @@ async function init() {
         args = ['jar', cheerpjWebRoot+"/jar/" + (sp.get('jar') || "game.jar")];
     }
 
-    FreeJ2ME.main(args).catch(e => {
-        console.error(e);
-        if (e && typeof e.printStackTrace === 'function') {
-            e.printStackTrace();
-        }
-        const message = e?.message || e?.toString?.() || 'Unknown error';
-        document.getElementById('loading').hidden = false;
-        document.getElementById('loading').textContent = `Crash: ${message}`;
-    });
+    FreeJ2ME.main(args).catch(showCrash);
 
 
 }
 
-init();
+function showCrash(e) {
+    console.error(e);
+    if (e && typeof e.printStackTrace === 'function') {
+        e.printStackTrace();
+    }
+    const message = e?.message || e?.toString?.() || 'Unknown error';
+    document.getElementById('loading').hidden = false;
+    document.getElementById('loading').textContent = `Crash: ${message}`;
+}
+
+init().catch(showCrash);

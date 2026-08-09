@@ -71,8 +71,8 @@
     }
 
     .right-grid {
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
     }
 
     /* Individual Key Styles */
@@ -213,14 +213,14 @@
 
     body.kbd-portrait #left-keys {
         left: max(8px, env(safe-area-inset-left));
-        width: clamp(132px, 38dvw, 172px);
-        height: clamp(132px, 20dvh, 172px);
+        width: clamp(124px, 36dvw, 164px);
+        height: clamp(124px, 18dvh, 164px);
     }
 
     body.kbd-portrait #right-keys {
         right: max(8px, env(safe-area-inset-right));
-        width: clamp(154px, 46dvw, 206px);
-        height: clamp(154px, 24dvh, 194px);
+        width: clamp(108px, 31dvw, 142px);
+        height: clamp(104px, 15dvh, 136px);
     }
 
     body.kbd-landscape #left-keys,
@@ -261,31 +261,26 @@
     </div>
     <div id="left-keys" class="keypad-part">
         <div class="key-grid left-grid">
-            <button data-key="F1" class="key small-key small-key-left">L</button>
+            <span></span>
             <button data-key="ArrowUp" class="key arrow-key arrow-up" aria-label="Up">Up</button>
-            <button data-key="F2" class="key small-key small-key-right">R</button>
+            <span></span>
             <button data-key="ArrowLeft" class="key arrow-key arrow-left" aria-label="Left">Left</button>
-            <button data-key="Digit5" class="key ok-key">5</button>
+            <span></span>
             <button data-key="ArrowRight" class="key arrow-key arrow-right" aria-label="Right">Right</button>
-            <button data-key="Escape" class="key small-key small-key-left">Esc</button>
+            <span></span>
             <button data-key="ArrowDown" class="key arrow-key arrow-down" aria-label="Down">Down</button>
-            <button data-key="Enter" class="key small-key small-key-right">OK</button>
+            <span></span>
         </div>
     </div>
     <div id="right-keys" class="keypad-part">
          <div class="key-grid right-grid">
-            <button data-key="Digit1" class="key">1</button>
-            <button data-key="Digit2" class="key">2 <span>ABC</span></button>
-            <button data-key="Digit3" class="key">3 <span>DEF</span></button>
-            <button data-key="Digit4" class="key">4 <span>GHI</span></button>
+            <button data-key="F1" class="key">L</button>
+            <button data-key="F2" class="key">R</button>
             <button data-key="Digit5" class="key ok-key">5</button>
-            <button data-key="Digit6" class="key">6 <span>MNO</span></button>
-            <button data-key="NumpadAsterisk" class="key">*</button>
-            <button data-key="Digit0" class="key">0</button>
-            <button data-key="Maximize" class="key small-key small-key-right" aria-label="Maximize">Full</button>
+            <button data-key="Enter" class="key ok-key">OK</button>
         </div>
     </div>
     <script src="https://cjrtnc.leaningtech.com/20260317_2978/loader.js"></script>
-    <script type="module" src="src/main.js?v=11"></script>
+    <script type="module" src="src/main.js?v=12"></script>
 </body>
 </html>
