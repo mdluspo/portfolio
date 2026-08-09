@@ -296,14 +296,23 @@ function SkillLogo({ skill }: { skill: SkillKey }) {
 
 export function SkillsSection() {
   const [activeSkill, setActiveSkill] = useState<SkillKey>(SKILL_KEYS[0]);
-  const [keyboardView, setKeyboardView] = useState({ scale: 1, rotateX: 24, rotateY: 0 });
+  const [keyboardView, setKeyboardView] = useState(() => ({
+    scale: typeof window !== "undefined" && window.innerWidth < 720 ? 0.86 : 1,
+    rotateX: 24,
+    rotateY: 0,
+  }));
   const keyboardRef = useRef<HTMLDivElement | null>(null);
   const keyboardViewRef = useRef(keyboardView);
+  const keyboardPointersRef = useRef(new Map<number, { x: number; y: number }>());
   const rotateDragRef = useRef<{
     x: number;
     y: number;
     rotateX: number;
     rotateY: number;
+  } | null>(null);
+  const pinchDragRef = useRef<{
+    distance: number;
+    scale: number;
   } | null>(null);
 
   useEffect(() => {
@@ -344,6 +353,19 @@ export function SkillsSection() {
 
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
+    keyboardPointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (keyboardPointersRef.current.size >= 2) {
+      const points = Array.from(keyboardPointersRef.current.values());
+      const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+      pinchDragRef.current = {
+        distance: Math.max(1, distance),
+        scale: keyboardViewRef.current.scale,
+      };
+      rotateDragRef.current = null;
+      return;
+    }
+
     rotateDragRef.current = {
       x: event.clientX,
       y: event.clientY,
@@ -353,6 +375,23 @@ export function SkillsSection() {
   };
 
   const handleKeyboardPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (keyboardPointersRef.current.has(event.pointerId)) {
+      keyboardPointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    }
+
+    if (pinchDragRef.current && keyboardPointersRef.current.size >= 2) {
+      const points = Array.from(keyboardPointersRef.current.values());
+      const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+      const isCompact = window.innerWidth < 720;
+      const minScale = isCompact ? 0.72 : 0.72;
+      const maxScale = isCompact ? 1.42 : 1.18;
+      setKeyboardView((current) => ({
+        ...current,
+        scale: Math.min(maxScale, Math.max(minScale, pinchDragRef.current!.scale * (distance / pinchDragRef.current!.distance))),
+      }));
+      return;
+    }
+
     const start = rotateDragRef.current;
     if (!start) return;
 
@@ -367,6 +406,8 @@ export function SkillsSection() {
   };
 
   const handleKeyboardPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    keyboardPointersRef.current.delete(event.pointerId);
+    pinchDragRef.current = null;
     rotateDragRef.current = null;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
@@ -406,7 +447,7 @@ export function SkillsSection() {
                 type="button"
                 className="skills-keyboard-reset"
                 aria-label="Reset keyboard view"
-                onClick={() => setKeyboardView({ scale: 1, rotateX: 24, rotateY: 0 })}
+                onClick={() => setKeyboardView({ scale: window.innerWidth < 720 ? 0.86 : 1, rotateX: 24, rotateY: 0 })}
               >
                 <RotateCcw className="h-5 w-5" strokeWidth={3} />
               </button>

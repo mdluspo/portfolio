@@ -59,6 +59,8 @@ const ROAD_PATH_D =
   "M 235,660 C 390,625 525,610 650,565 C 765,523 805,455 930,395 C 1045,340 1135,295 1240,190";
 const GAME_RENDER_FPS = 30;
 const MAX_ACTIVE_ENEMIES = 14;
+const TOWER_COLLISION_X = 86;
+const TOWER_COLLISION_Y = 108;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
@@ -125,6 +127,81 @@ function randomDeploymentPoint(pageScroll = window.scrollY) {
     x: clamp(pt.x + offsetX, minX, maxX),
     y: clamp(pt.y - aboveRoadOffset + pageScroll, minY, maxY),
   };
+}
+
+function deploymentBounds(pageScroll = window.scrollY) {
+  const pageWidth = Math.max(document.documentElement.scrollWidth, window.innerWidth);
+  const pageHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight);
+  const heroHeight = window.innerHeight || 600;
+  const isCompact = window.innerWidth < 720;
+
+  return {
+    minX: isCompact ? 72 : 40,
+    maxX: pageWidth - (isCompact ? 72 : 40),
+    minY: pageScroll + 80,
+    maxY: Math.min(pageHeight - 80, pageScroll + heroHeight * (isCompact ? 0.68 : 0.72)),
+  };
+}
+
+function isTowerPointCrowded(
+  point: { x: number; y: number },
+  towers: DeployedTower[],
+  movingKey?: TowerKey,
+) {
+  return towers.some((tower) => {
+    if (tower.key === movingKey) return false;
+    const dx = Math.abs(point.x - tower.x) / TOWER_COLLISION_X;
+    const dy = Math.abs(point.y - tower.y) / TOWER_COLLISION_Y;
+    return Math.hypot(dx, dy) < 1;
+  });
+}
+
+function resolveDeploymentPoint(
+  point: { x: number; y: number },
+  towers: DeployedTower[],
+  movingKey?: TowerKey,
+  pageScroll = window.scrollY,
+) {
+  const bounds = deploymentBounds(pageScroll);
+  const base = {
+    x: clamp(point.x, bounds.minX, bounds.maxX),
+    y: clamp(point.y, bounds.minY, bounds.maxY),
+  };
+
+  if (!isTowerPointCrowded(base, towers, movingKey)) return base;
+
+  const rings = [88, 124, 164, 208, 252];
+  const directions = [
+    [1, 0],
+    [-1, 0],
+    [0, -1],
+    [0, 1],
+    [1, -0.82],
+    [-1, -0.82],
+    [1, 0.82],
+    [-1, 0.82],
+  ];
+
+  for (const ring of rings) {
+    for (const [dirX, dirY] of directions) {
+      const candidate = {
+        x: clamp(base.x + dirX * ring, bounds.minX, bounds.maxX),
+        y: clamp(base.y + dirY * ring, bounds.minY, bounds.maxY),
+      };
+      if (!isTowerPointCrowded(candidate, towers, movingKey)) return candidate;
+    }
+  }
+
+  const stepX = TOWER_COLLISION_X;
+  const stepY = TOWER_COLLISION_Y;
+  for (let y = bounds.minY; y <= bounds.maxY; y += stepY) {
+    for (let x = bounds.minX; x <= bounds.maxX; x += stepX) {
+      const candidate = { x, y };
+      if (!isTowerPointCrowded(candidate, towers, movingKey)) return candidate;
+    }
+  }
+
+  return base;
 }
 
 function heroEdgeOpacity(y: number) {
@@ -386,13 +463,15 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
 
   const deployUnit = useCallback((key: TowerKey) => {
     if (placed.has(key)) return;
-    const point = randomDeploymentPoint();
     setDeployedTowers((prev) => ({
       ...prev,
       [key]: {
         key,
-        x: point.x,
-        y: point.y,
+        ...resolveDeploymentPoint(
+          randomDeploymentPoint(),
+          Object.values(prev).filter((tower): tower is DeployedTower => Boolean(tower)),
+          key,
+        ),
       },
     }));
     place(key);
@@ -401,13 +480,16 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
   useEffect(() => {
     if (!autoDeployKey || deployedTowers[autoDeployKey]) return;
 
-    const point = randomDeploymentPoint(0);
     setDeployedTowers((prev) => ({
       ...prev,
       [autoDeployKey]: {
         key: autoDeployKey,
-        x: point.x,
-        y: point.y,
+        ...resolveDeploymentPoint(
+          randomDeploymentPoint(0),
+          Object.values(prev).filter((tower): tower is DeployedTower => Boolean(tower)),
+          autoDeployKey,
+          0,
+        ),
       },
     }));
     if (!placed.has(autoDeployKey)) place(autoDeployKey);
@@ -463,7 +545,15 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
 
       UNITS.forEach(({ key }) => {
         if (!placed.has(key) || next[key]) return;
-        next[key] = { key, ...randomDeploymentPoint(0) };
+        next[key] = {
+          key,
+          ...resolveDeploymentPoint(
+            randomDeploymentPoint(0),
+            Object.values(next).filter((tower): tower is DeployedTower => Boolean(tower)),
+            key,
+            0,
+          ),
+        };
         changed = true;
       });
 
@@ -949,38 +1039,23 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
         return;
       }
 
-      const deployed = Object.values(deployedTowers).filter(
-        (tower): tower is DeployedTower => Boolean(tower),
-      );
-      const replacementTarget = deployed.find((tower) => {
-        if (tower.key === dragging.key) return false;
-        const towerX = tower.x;
-        const towerY = tower.y - window.scrollY;
-        return Math.abs(e.clientX - towerX) < 70 && Math.abs(e.clientY - towerY) < 95;
-      });
-
-      if (replacementTarget) {
-        setDeployedTowers((prev) => {
-          const next = { ...prev };
-          delete next[replacementTarget.key];
-          next[dragging.key] = {
-            key: dragging.key,
-            x: replacementTarget.x,
-            y: replacementTarget.y,
-          };
-          return next;
-        });
-        remove(replacementTarget.key);
-      } else {
-        setDeployedTowers((prev) => ({
+      setDeployedTowers((prev) => {
+        const existing = Object.values(prev).filter((tower): tower is DeployedTower => Boolean(tower));
+        return {
           ...prev,
           [dragging.key]: {
             key: dragging.key,
-            x: clamp(e.clientX, 40, pageWidth - 40),
-            y: clamp(e.clientY + window.scrollY, 80, pageHeight - 80),
+            ...resolveDeploymentPoint(
+              {
+                x: clamp(e.clientX, 40, pageWidth - 40),
+                y: clamp(e.clientY + window.scrollY, 80, pageHeight - 80),
+              },
+              existing,
+              dragging.key,
+            ),
           },
-        }));
-      }
+        };
+      });
 
       if (!placed.has(dragging.key)) place(dragging.key);
       setDragging(null);

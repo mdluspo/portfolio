@@ -27,8 +27,20 @@ let fractionScale = sp.get('fractionScale') || (localStorage && localStorage.get
 let scaleSet = false;
 
 const keyRepeatManager = new KeyRepeatManager();
+let lastTouchPoint = null;
 
 window.evtQueue = evtQueue;
+
+function displayPointFromClient(clientX, clientY) {
+    const rect = display.getBoundingClientRect();
+    const scaleX = screenCtx.canvas.width / Math.max(1, rect.width);
+    const scaleY = screenCtx.canvas.height / Math.max(1, rect.height);
+
+    return {
+        x: Math.max(0, Math.min(screenCtx.canvas.width - 1, (clientX - rect.left) * scaleX)) | 0,
+        y: Math.max(0, Math.min(screenCtx.canvas.height - 1, (clientY - rect.top) * scaleY)) | 0,
+    };
+}
 
 function autoscale() {
     if (!scaleSet) return;
@@ -43,11 +55,9 @@ function autoscale() {
         if (screenWidth > screenHeight) {
             document.body.classList.add('kbd-landscape');
             document.body.classList.remove('kbd-portrait');
-            screenWidth = screenWidth - 2*kbdWidth;
         } else {
             document.body.classList.add('kbd-portrait');
             document.body.classList.remove('kbd-landscape');
-            screenHeight = screenHeight - kbdHeight;
         }
     }
 
@@ -113,11 +123,12 @@ function setListeners() {
     display.addEventListener('mousedown', async e => {
         display.focus();
         if (noMouse) return;
+        const point = displayPointFromClient(e.clientX, e.clientY);
 
         evtQueue.queueEvent({
             kind: 'pointerpressed',
-            x: e.offsetX / display.currentCSSZoom | 0,
-            y: e.offsetY / display.currentCSSZoom | 0,
+            x: point.x,
+            y: point.y,
         });
 
         mouseDown = true;
@@ -128,11 +139,12 @@ function setListeners() {
     display.addEventListener('mousemove', async e => {
         if (noMouse) return;
         if (!mouseDown) return;
+        const point = displayPointFromClient(e.clientX, e.clientY);
 
         evtQueue.queueEvent({
             kind: 'pointerdragged',
-            x: e.offsetX / display.currentCSSZoom | 0,
-            y: e.offsetY / display.currentCSSZoom | 0,
+            x: point.x,
+            y: point.y,
         });
 
         e.preventDefault();
@@ -143,11 +155,12 @@ function setListeners() {
         if (!mouseDown) return;
 
         mouseDown = false;
+        const point = displayPointFromClient(e.clientX, e.clientY);
 
         evtQueue.queueEvent({
             kind: 'pointerreleased',
-            x: (e.pageX - display.offsetLeft) / display.currentCSSZoom | 0,
-            y: (e.pageY - display.offsetTop) / display.currentCSSZoom | 0,
+            x: point.x,
+            y: point.y,
         });
 
         e.preventDefault();
@@ -157,11 +170,15 @@ function setListeners() {
     display.addEventListener('touchstart', async e => {
         display.focus();
         noMouse = true;
+        const touch = e.changedTouches[0];
+        if (!touch) return;
+        const point = displayPointFromClient(touch.clientX, touch.clientY);
+        lastTouchPoint = point;
 
         evtQueue.queueEvent({
             kind: 'pointerpressed',
-            x: (e.changedTouches[0].pageX - display.offsetLeft) / display.currentCSSZoom | 0,
-            y: (e.changedTouches[0].pageY - display.offsetTop) / display.currentCSSZoom | 0,
+            x: point.x,
+            y: point.y,
         });
 
         e.preventDefault();
@@ -169,11 +186,15 @@ function setListeners() {
 
     display.addEventListener('touchmove', async e => {
         noMouse = true;
+        const touch = e.changedTouches[0];
+        if (!touch) return;
+        const point = displayPointFromClient(touch.clientX, touch.clientY);
+        lastTouchPoint = point;
 
         evtQueue.queueEvent({
             kind: 'pointerdragged',
-            x: (e.changedTouches[0].pageX - display.offsetLeft) / display.currentCSSZoom | 0,
-            y: (e.changedTouches[0].pageY - display.offsetTop) / display.currentCSSZoom | 0,
+            x: point.x,
+            y: point.y,
         });
 
         e.preventDefault();
@@ -181,15 +202,35 @@ function setListeners() {
 
     display.addEventListener('touchend', async e => {
         noMouse = true;
+        const touch = e.changedTouches[0];
+        const point = touch ? displayPointFromClient(touch.clientX, touch.clientY) : lastTouchPoint;
+        if (!point) return;
+        lastTouchPoint = null;
 
         evtQueue.queueEvent({
             kind: 'pointerreleased',
-            x: (e.changedTouches[0].pageX - display.offsetLeft) / display.currentCSSZoom | 0,
-            y: (e.changedTouches[0].pageY - display.offsetTop) / display.currentCSSZoom | 0,
+            x: point.x,
+            y: point.y,
         });
 
         e.preventDefault();
-    });
+    }, {passive: false});
+
+    display.addEventListener('touchcancel', async e => {
+        noMouse = true;
+        const touch = e.changedTouches[0];
+        const point = touch ? displayPointFromClient(touch.clientX, touch.clientY) : lastTouchPoint;
+        if (!point) return;
+        lastTouchPoint = null;
+
+        evtQueue.queueEvent({
+            kind: 'pointerreleased',
+            x: point.x,
+            y: point.y,
+        });
+
+        e.preventDefault();
+    }, {passive: false});
 
     document.addEventListener('mousedown', e => {
         console.log('refocus');
