@@ -270,13 +270,14 @@ function setFaviconFromBuffer(arrayBuffer) {
 
 async function ensureAppInstalled(lib, appId) {
     let appFile = null;
+    const reinstall = sp.get('reinstall') === '1';
     try {
         appFile = await cjFileBlob("/files/" + appId + "/app.jar");
     } catch (error) {
         console.warn("Unable to inspect installed app, reinstalling from bundle.", error);
     }
 
-    if (!appFile) {
+    if (reinstall || !appFile) {
         const launcherUtil = await lib.pl.zb3.freej2me.launcher.LauncherUtil;
 
         await launcherUtil.installFromBundle(cheerpjWebRoot + "/apps/", appId);

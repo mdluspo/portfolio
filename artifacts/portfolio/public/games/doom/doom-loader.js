@@ -16,19 +16,20 @@ const hasWebAssembly = () => {
 const statusEl = document.getElementById("status");
 const canvas = document.getElementById("canvas");
 const doomKeyMap = {
-  w: { key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
-  a: { key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 },
-  s: { key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
-  d: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
-  e: { key: " ", code: "Space", keyCode: 32 },
+  w: { key: "w", code: "KeyW", keyCode: 87 },
+  a: { key: "a", code: "KeyA", keyCode: 65 },
+  s: { key: "s", code: "KeyS", keyCode: 83 },
+  d: { key: "d", code: "KeyD", keyCode: 68 },
+  e: { key: "e", code: "KeyE", keyCode: 69 },
 };
 const doomTouchKeyMap = {
-  ArrowUp: { key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
-  ArrowLeft: { key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 },
-  ArrowDown: { key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
-  ArrowRight: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
+  ArrowUp: { key: "w", code: "KeyW", keyCode: 87 },
+  ArrowLeft: { key: "a", code: "KeyA", keyCode: 65 },
+  ArrowDown: { key: "s", code: "KeyS", keyCode: 83 },
+  ArrowRight: { key: "d", code: "KeyD", keyCode: 68 },
   Control: { key: "Control", code: "ControlLeft", keyCode: 17 },
   Space: { key: " ", code: "Space", keyCode: 32 },
+  KeyE: { key: "e", code: "KeyE", keyCode: 69 },
   Enter: { key: "Enter", code: "Enter", keyCode: 13 },
   Shift: { key: "Shift", code: "ShiftLeft", keyCode: 16 },
   Escape: { key: "Escape", code: "Escape", keyCode: 27 },
@@ -79,9 +80,18 @@ function startDoom() {
     return;
   }
 
+  if (canvas) {
+    canvas.requestPointerLock = () => {};
+    canvas.mozRequestPointerLock = undefined;
+    canvas.webkitRequestPointerLock = undefined;
+    canvas.msRequestPointerLock = undefined;
+  }
+
   window.Module = {
     noInitialRun: true,
     arguments: [],
+    elementPointerLock: false,
+    lockPointer: false,
     locateFile(path) {
       return `/games/doom/${path}`;
     },
@@ -92,7 +102,7 @@ function startDoom() {
       },
     ],
     onRuntimeInitialized() {
-      setStatus("Loaded. Click the game, then use arrows/WASD, Ctrl or Space to fire.");
+      setStatus("Loaded. Click the game, then use WASD, Space to fire, E to use.");
       canvas?.focus();
       window.callMain([
         "-iwad",
