@@ -382,8 +382,13 @@ async function init() {
     }
 
     FreeJ2ME.main(args).catch(e => {
-        e.printStackTrace();
-        document.getElementById('loading').textContent = 'Crash :(';
+        console.error(e);
+        if (e && typeof e.printStackTrace === 'function') {
+            e.printStackTrace();
+        }
+        const message = e?.message || e?.toString?.() || 'Unknown error';
+        document.getElementById('loading').hidden = false;
+        document.getElementById('loading').textContent = `Crash: ${message}`;
     });
 
 

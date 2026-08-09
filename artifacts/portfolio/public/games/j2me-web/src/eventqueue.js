@@ -28,7 +28,7 @@ export class EventQueue {
 
     async waitForEvent() {
         this.started = true;
-        if (this.queue.length > 1) {
+        if (this.queue.length > 0) {
             return this.queue.shift();
         }
 

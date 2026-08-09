@@ -297,8 +297,8 @@ function SkillLogo({ skill }: { skill: SkillKey }) {
 export function SkillsSection() {
   const [activeSkill, setActiveSkill] = useState<SkillKey>(SKILL_KEYS[0]);
   const [keyboardView, setKeyboardView] = useState(() => ({
-    scale: typeof window !== "undefined" && window.innerWidth < 720 ? 0.86 : 1,
-    rotateX: 24,
+    scale: typeof window !== "undefined" && window.innerWidth < 720 ? 0.72 : 1,
+    rotateX: typeof window !== "undefined" && window.innerWidth < 720 ? 18 : 24,
     rotateY: 0,
   }));
   const keyboardRef = useRef<HTMLDivElement | null>(null);
@@ -416,9 +416,9 @@ export function SkillsSection() {
 
   return (
     <LockedSection unlockKey="techstack" title="Skills & Tech Stack" towerName="Tech Stack Tower">
-      <section id="techstack" className="section-soft-entry py-24 px-4 md:px-8 bg-[#f7fbff] relative z-10 overflow-hidden">
+      <section id="techstack" className="section-soft-entry px-4 py-14 md:px-8 md:py-24 bg-[#f7fbff] relative z-10 overflow-hidden">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-4 mb-16">
+          <div className="mb-8 flex items-center gap-4 md:mb-16">
             <div className="h-1 flex-1 bg-black rounded-full" />
             <h2 className="text-4xl md:text-5xl font-display uppercase tracking-wider text-center">
               Arsenal
@@ -447,7 +447,11 @@ export function SkillsSection() {
                 type="button"
                 className="skills-keyboard-reset"
                 aria-label="Reset keyboard view"
-                onClick={() => setKeyboardView({ scale: window.innerWidth < 720 ? 0.86 : 1, rotateX: 24, rotateY: 0 })}
+                onClick={() => setKeyboardView({
+                  scale: window.innerWidth < 720 ? 0.72 : 1,
+                  rotateX: window.innerWidth < 720 ? 18 : 24,
+                  rotateY: 0,
+                })}
               >
                 <RotateCcw className="h-5 w-5" strokeWidth={3} />
               </button>
