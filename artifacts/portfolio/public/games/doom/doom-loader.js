@@ -35,14 +35,22 @@ const doomTouchKeyMap = {
 };
 
 function dispatchDoomKey(type, mapped) {
-  canvas?.dispatchEvent(
-    new KeyboardEvent(type, {
+  const eventInit = {
       ...mapped,
       which: mapped.keyCode,
       bubbles: true,
       cancelable: true,
-    }),
-  );
+  };
+  const targets = [canvas, document, window].filter(Boolean);
+
+  targets.forEach((target) => {
+    const event = new KeyboardEvent(type, eventInit);
+    Object.defineProperties(event, {
+      keyCode: { get: () => mapped.keyCode },
+      which: { get: () => mapped.keyCode },
+    });
+    target.dispatchEvent(event);
+  });
 }
 
 function setPressedKeys(nextKeys, activeKeys) {
