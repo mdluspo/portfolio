@@ -27,79 +27,8 @@ let fractionScale = sp.get('fractionScale') || (localStorage && localStorage.get
 let scaleSet = false;
 
 const keyRepeatManager = new KeyRepeatManager();
-let lastTouchPoint = null;
 
 window.evtQueue = evtQueue;
-
-function createSilentMidiPlayer() {
-    let volume = 0;
-    return {
-        addEventListener() {},
-        removeEventListener() {},
-        async setSequence() { return 0; },
-        play() {},
-        loop() {},
-        stop() {},
-        shortEvent() {},
-        async getPosition() { return 0; },
-        seek() {},
-        close() {},
-        get duration() { return 0; },
-        get volume() { return volume; },
-        set volume(nextVolume) { volume = nextVolume; },
-    };
-}
-
-function createSilentLibMidi() {
-    const midiPlayer = createSilentMidiPlayer();
-    return {
-        initialized: true,
-        midiPlayer,
-        async init() {},
-        async close() {},
-    };
-}
-
-function createSilentMediaPlayer() {
-    let volume = 0;
-    return {
-        addEventListener() {},
-        removeEventListener() {},
-        async load() { return false; },
-        play() {},
-        setLooping() {},
-        stop() {},
-        seek() {},
-        close() {},
-        configureVideo() {},
-        async getSnapshot() { return null; },
-        get position() { return 0; },
-        get duration() { return -1; },
-        get videoWidth() { return 0; },
-        get videoHeight() { return 0; },
-        get volume() { return volume; },
-        set volume(nextVolume) { volume = nextVolume; },
-    };
-}
-
-function createSilentLibMedia() {
-    return {
-        createMediaPlayer() {
-            return createSilentMediaPlayer();
-        },
-    };
-}
-
-function displayPointFromClient(clientX, clientY) {
-    const rect = display.getBoundingClientRect();
-    const scaleX = screenCtx.canvas.width / Math.max(1, rect.width);
-    const scaleY = screenCtx.canvas.height / Math.max(1, rect.height);
-
-    return {
-        x: Math.max(0, Math.min(screenCtx.canvas.width - 1, (clientX - rect.left) * scaleX)) | 0,
-        y: Math.max(0, Math.min(screenCtx.canvas.height - 1, (clientY - rect.top) * scaleY)) | 0,
-    };
-}
 
 function autoscale() {
     if (!scaleSet) return;
@@ -114,9 +43,11 @@ function autoscale() {
         if (screenWidth > screenHeight) {
             document.body.classList.add('kbd-landscape');
             document.body.classList.remove('kbd-portrait');
+            screenWidth = screenWidth - 2*kbdWidth;
         } else {
             document.body.classList.add('kbd-portrait');
             document.body.classList.remove('kbd-landscape');
+            screenHeight = screenHeight - kbdHeight;
         }
     }
 
@@ -182,12 +113,11 @@ function setListeners() {
     display.addEventListener('mousedown', async e => {
         display.focus();
         if (noMouse) return;
-        const point = displayPointFromClient(e.clientX, e.clientY);
 
         evtQueue.queueEvent({
             kind: 'pointerpressed',
-            x: point.x,
-            y: point.y,
+            x: e.offsetX / display.currentCSSZoom | 0,
+            y: e.offsetY / display.currentCSSZoom | 0,
         });
 
         mouseDown = true;
@@ -198,12 +128,11 @@ function setListeners() {
     display.addEventListener('mousemove', async e => {
         if (noMouse) return;
         if (!mouseDown) return;
-        const point = displayPointFromClient(e.clientX, e.clientY);
 
         evtQueue.queueEvent({
             kind: 'pointerdragged',
-            x: point.x,
-            y: point.y,
+            x: e.offsetX / display.currentCSSZoom | 0,
+            y: e.offsetY / display.currentCSSZoom | 0,
         });
 
         e.preventDefault();
@@ -214,12 +143,11 @@ function setListeners() {
         if (!mouseDown) return;
 
         mouseDown = false;
-        const point = displayPointFromClient(e.clientX, e.clientY);
 
         evtQueue.queueEvent({
             kind: 'pointerreleased',
-            x: point.x,
-            y: point.y,
+            x: (e.pageX - display.offsetLeft) / display.currentCSSZoom | 0,
+            y: (e.pageY - display.offsetTop) / display.currentCSSZoom | 0,
         });
 
         e.preventDefault();
@@ -229,15 +157,11 @@ function setListeners() {
     display.addEventListener('touchstart', async e => {
         display.focus();
         noMouse = true;
-        const touch = e.changedTouches[0];
-        if (!touch) return;
-        const point = displayPointFromClient(touch.clientX, touch.clientY);
-        lastTouchPoint = point;
 
         evtQueue.queueEvent({
             kind: 'pointerpressed',
-            x: point.x,
-            y: point.y,
+            x: (e.changedTouches[0].pageX - display.offsetLeft) / display.currentCSSZoom | 0,
+            y: (e.changedTouches[0].pageY - display.offsetTop) / display.currentCSSZoom | 0,
         });
 
         e.preventDefault();
@@ -245,15 +169,11 @@ function setListeners() {
 
     display.addEventListener('touchmove', async e => {
         noMouse = true;
-        const touch = e.changedTouches[0];
-        if (!touch) return;
-        const point = displayPointFromClient(touch.clientX, touch.clientY);
-        lastTouchPoint = point;
 
         evtQueue.queueEvent({
             kind: 'pointerdragged',
-            x: point.x,
-            y: point.y,
+            x: (e.changedTouches[0].pageX - display.offsetLeft) / display.currentCSSZoom | 0,
+            y: (e.changedTouches[0].pageY - display.offsetTop) / display.currentCSSZoom | 0,
         });
 
         e.preventDefault();
@@ -261,35 +181,15 @@ function setListeners() {
 
     display.addEventListener('touchend', async e => {
         noMouse = true;
-        const touch = e.changedTouches[0];
-        const point = touch ? displayPointFromClient(touch.clientX, touch.clientY) : lastTouchPoint;
-        if (!point) return;
-        lastTouchPoint = null;
 
         evtQueue.queueEvent({
             kind: 'pointerreleased',
-            x: point.x,
-            y: point.y,
+            x: (e.changedTouches[0].pageX - display.offsetLeft) / display.currentCSSZoom | 0,
+            y: (e.changedTouches[0].pageY - display.offsetTop) / display.currentCSSZoom | 0,
         });
 
         e.preventDefault();
-    }, {passive: false});
-
-    display.addEventListener('touchcancel', async e => {
-        noMouse = true;
-        const touch = e.changedTouches[0];
-        const point = touch ? displayPointFromClient(touch.clientX, touch.clientY) : lastTouchPoint;
-        if (!point) return;
-        lastTouchPoint = null;
-
-        evtQueue.queueEvent({
-            kind: 'pointerreleased',
-            x: point.x,
-            y: point.y,
-        });
-
-        e.preventDefault();
-    }, {passive: false});
+    });
 
     document.addEventListener('mousedown', e => {
         console.log('refocus');
@@ -328,48 +228,12 @@ function setFaviconFromBuffer(arrayBuffer) {
 }
 
 async function ensureAppInstalled(lib, appId) {
-    let appFile = null;
-    const reinstall = sp.get('reinstall') === '1';
-    const resetInstall = sp.get('reset') === '1';
-    const launcherUtil = await lib.pl.zb3.freej2me.launcher.LauncherUtil;
+    const appFile = await cjFileBlob(appId + "/app.jar");
 
-    if (resetInstall) {
-        try {
-            await launcherUtil.uninstallApp(appId);
-        } catch (error) {
-            console.warn("Unable to clear existing app before reinstall; continuing.", error);
-        }
-    }
+    if (!appFile) {
+        const launcherUtil = await lib.pl.zb3.freej2me.launcher.LauncherUtil;
 
-    try {
-        appFile = await cjFileBlob("/files/" + appId + "/app.jar");
-    } catch (error) {
-        console.warn("Unable to inspect installed app, reinstalling from bundle.", error);
-    }
-
-    if (resetInstall || reinstall || !appFile) {
         await launcherUtil.installFromBundle(cheerpjWebRoot + "/apps/", appId);
-    }
-}
-
-async function initAudioBridge() {
-    if (sp.get('sound') === '0') {
-        window.libmidi = createSilentLibMidi();
-        window.libmedia = createSilentLibMedia();
-        return;
-    }
-
-    try {
-        window.libmidi = new LibMidi(createUnlockingAudioContext());
-        await window.libmidi.init();
-        window.libmidi.midiPlayer?.addEventListener('end-of-media', e => {
-            window.evtQueue.queueEvent({kind: 'player-eom', player: e.target});
-        });
-        window.libmedia = new LibMedia();
-    } catch (error) {
-        console.warn("Audio bridge failed; continuing with silent media.", error);
-        window.libmidi = createSilentLibMidi();
-        window.libmedia = createSilentLibMedia();
     }
 }
 
@@ -381,7 +245,12 @@ async function init() {
 
     setListeners();
 
-    await initAudioBridge();
+    window.libmidi = new LibMidi(createUnlockingAudioContext());
+    await window.libmidi.init();
+    window.libmidi.midiPlayer.addEventListener('end-of-media', e => {
+        window.evtQueue.queueEvent({kind: 'player-eom', player: e.target});
+    })
+    window.libmedia = new LibMedia();
 
     await cheerpjInit({
         enableDebug: false,
@@ -471,19 +340,12 @@ async function init() {
         args = ['jar', cheerpjWebRoot+"/jar/" + (sp.get('jar') || "game.jar")];
     }
 
-    FreeJ2ME.main(args).catch(showCrash);
-
-
-}
-
-function showCrash(e) {
-    console.error(e);
-    if (e && typeof e.printStackTrace === 'function') {
+    FreeJ2ME.main(args).catch(e => {
         e.printStackTrace();
-    }
-    const message = e?.message || e?.toString?.() || 'Unknown error';
-    document.getElementById('loading').hidden = false;
-    document.getElementById('loading').textContent = `Crash: ${message}`;
+        document.getElementById('loading').textContent = 'Crash :(';
+    });
+
+
 }
 
-init().catch(showCrash);
+init();

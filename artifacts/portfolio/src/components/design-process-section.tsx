@@ -88,7 +88,7 @@ const GAMES: Array<{
     title: "DOOM II",
     meta: "FPS / WAD / 1994",
     status: "READY",
-    src: "/games/doom/doom.html?v=9",
+    src: "/games/doom/doom.html?v=10",
     accent: "bg-[#ffcf33]",
     label: "DII",
     thumbnail: "/doom.jpg",
@@ -142,6 +142,12 @@ export function DesignProcessSection() {
   const selectedGameSrc = selectedGame
     ? `${import.meta.env.BASE_URL.replace(/\/$/, "")}${selectedGame.src}${isJ2meGame && isMobile ? "&mobile=1" : ""}`
     : "";
+  const focusGameFrame = () => {
+    const frame = gameFrameRef.current;
+    frame?.focus();
+    frame?.contentWindow?.focus();
+    frame?.contentWindow?.postMessage("resume-game", "*");
+  };
 
   useEffect(() => {
     if (!isGameWindowOpen) return;
@@ -326,11 +332,7 @@ export function DesignProcessSection() {
                         <button
                           type="button"
                           aria-label="Resume game"
-                          onClick={() => {
-                            gameFrameRef.current?.contentWindow?.postMessage("resume-game", "*");
-                            gameFrameRef.current?.contentWindow?.focus();
-                            gameFrameRef.current?.focus();
-                          }}
+                          onClick={focusGameFrame}
                           className="border-[2px] border-black bg-white px-1.5 py-1 font-display text-[9px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:px-2 sm:text-[10px]"
                         >
                           Resume
@@ -384,6 +386,9 @@ export function DesignProcessSection() {
                           key={`${selectedGame.id}-${isMobile ? "mobile" : "desktop"}-${gameSessionId}`}
                           className="block h-full w-full border-0"
                           allow="fullscreen; gamepad"
+                          tabIndex={0}
+                          onLoad={focusGameFrame}
+                          onPointerDown={focusGameFrame}
                         />
 
                         {showGameControls && (
