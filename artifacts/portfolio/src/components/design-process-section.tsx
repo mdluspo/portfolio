@@ -269,7 +269,7 @@ export function DesignProcessSection() {
                         ? "h-auto w-[calc(100vw-1rem)] max-w-md sm:w-full"
                         : isJ2meGame
                           ? "h-[92dvh] w-[calc(100vw-1rem)] max-w-[1180px] sm:h-[88vh] sm:w-[min(96vw,1180px)]"
-                          : "h-[92dvh] w-[calc(100vw-1rem)] max-w-[1280px] sm:w-[min(96vw,1280px)]"
+                          : "h-[82dvh] w-[calc(100vw-1rem)] max-w-5xl sm:w-full"
                   }`}
                   style={
                     isGameWindowFullscreen
