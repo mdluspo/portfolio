@@ -228,12 +228,88 @@ function setFaviconFromBuffer(arrayBuffer) {
 }
 
 async function ensureAppInstalled(lib, appId) {
-    const appFile = await cjFileBlob(appId + "/app.jar");
+    let appFile = null;
+    const reinstall = sp.get('reinstall') === '1';
+    const resetInstall = sp.get('reset') === '1';
+    const launcherUtil = await lib.pl.zb3.freej2me.launcher.LauncherUtil;
 
-    if (!appFile) {
-        const launcherUtil = await lib.pl.zb3.freej2me.launcher.LauncherUtil;
+    if (resetInstall) {
+        try {
+            await launcherUtil.uninstallApp(appId);
+        } catch (error) {
+            console.warn("Unable to clear existing app before reinstall; continuing.", error);
+        }
+    }
 
+    try {
+        appFile = await cjFileBlob("/files/" + appId + "/app.jar");
+    } catch (error) {
+        console.warn("Unable to inspect installed app, reinstalling from bundle.", error);
+    }
+
+    if (resetInstall || reinstall || !appFile) {
         await launcherUtil.installFromBundle(cheerpjWebRoot + "/apps/", appId);
+    }
+}
+
+function createSilentLibMidi() {
+    const midiPlayer = createSilentMediaPlayer();
+    return {
+        initialized: true,
+        midiPlayer,
+        async init() {},
+        async close() {},
+    };
+}
+
+function createSilentMediaPlayer() {
+    let volume = 0;
+    return {
+        addEventListener() {},
+        removeEventListener() {},
+        async load() { return false; },
+        play() {},
+        setLooping() {},
+        stop() {},
+        seek() {},
+        close() {},
+        configureVideo() {},
+        async getSnapshot() { return null; },
+        get position() { return 0; },
+        get duration() { return -1; },
+        get videoWidth() { return 0; },
+        get videoHeight() { return 0; },
+        get volume() { return volume; },
+        set volume(nextVolume) { volume = nextVolume; },
+    };
+}
+
+function createSilentLibMedia() {
+    return {
+        createMediaPlayer() {
+            return createSilentMediaPlayer();
+        },
+    };
+}
+
+async function initAudioBridge() {
+    if (sp.get('sound') === '0') {
+        window.libmidi = createSilentLibMidi();
+        window.libmedia = createSilentLibMedia();
+        return;
+    }
+
+    try {
+        window.libmidi = new LibMidi(createUnlockingAudioContext());
+        await window.libmidi.init();
+        window.libmidi.midiPlayer?.addEventListener('end-of-media', e => {
+            window.evtQueue.queueEvent({kind: 'player-eom', player: e.target});
+        });
+        window.libmedia = new LibMedia();
+    } catch (error) {
+        console.warn("Audio bridge failed; continuing with silent media.", error);
+        window.libmidi = createSilentLibMidi();
+        window.libmedia = createSilentLibMedia();
     }
 }
 
@@ -245,12 +321,7 @@ async function init() {
 
     setListeners();
 
-    window.libmidi = new LibMidi(createUnlockingAudioContext());
-    await window.libmidi.init();
-    window.libmidi.midiPlayer.addEventListener('end-of-media', e => {
-        window.evtQueue.queueEvent({kind: 'player-eom', player: e.target});
-    })
-    window.libmedia = new LibMedia();
+    await initAudioBridge();
 
     await cheerpjInit({
         enableDebug: false,
@@ -340,12 +411,19 @@ async function init() {
         args = ['jar', cheerpjWebRoot+"/jar/" + (sp.get('jar') || "game.jar")];
     }
 
-    FreeJ2ME.main(args).catch(e => {
-        e.printStackTrace();
-        document.getElementById('loading').textContent = 'Crash :(';
-    });
+    FreeJ2ME.main(args).catch(showCrash);
 
 
 }
 
-init();
+function showCrash(e) {
+    console.error(e);
+    if (e && typeof e.printStackTrace === 'function') {
+        e.printStackTrace();
+    }
+    const message = e?.message || e?.toString?.() || 'Unknown error';
+    document.getElementById('loading').hidden = false;
+    document.getElementById('loading').textContent = `Crash: ${message}`;
+}
+
+init().catch(showCrash);
