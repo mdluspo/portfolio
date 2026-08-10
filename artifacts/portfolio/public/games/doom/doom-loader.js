@@ -50,6 +50,7 @@ function dispatchDoomKey(type, mapped) {
     Object.defineProperties(event, {
       keyCode: { get: () => mapped.keyCode },
       which: { get: () => mapped.keyCode },
+      doomSynthetic: { get: () => true },
     });
     target.dispatchEvent(event);
   });
@@ -137,6 +138,7 @@ function startDoom() {
   window.addEventListener(
     "keydown",
     (event) => {
+      if (event.doomSynthetic) return;
       const mapped = doomKeyMap[event.key.toLowerCase()];
       if (!mapped || event.repeat) return;
       event.preventDefault();
@@ -148,6 +150,7 @@ function startDoom() {
   window.addEventListener(
     "keyup",
     (event) => {
+      if (event.doomSynthetic) return;
       const mapped = doomKeyMap[event.key.toLowerCase()];
       if (!mapped) return;
       event.preventDefault();
