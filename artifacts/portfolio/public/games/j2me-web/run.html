@@ -8,7 +8,6 @@
 <style>
     html, body {
         height: 100%;
-        width: 100%;
     }
     body {
         margin: 0;
@@ -16,7 +15,6 @@
         font-family: sans;
         background: #000;
         overflow: hidden;
-        touch-action: none;
     }
     #screen-area {
         background-color: #000;
@@ -47,19 +45,18 @@
     }
 
     .keypad-part {
-        background-color: transparent;
-        padding: clamp(4px, 1.5vmin, 8px);
-        display: flex;
+        background-color: #222; /* Dark background for keypad areas */
+        padding: 8px;
+        display: flex; /* Use flex to center the grid */
         justify-content: center;
         align-items: center;
         box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
-        pointer-events: auto;
+        -webkit-tap-highlight-color: transparent; /* Disable tap highlight on mobile */
     }
 
     .key-grid {
         display: grid;
-        gap: clamp(3px, 1.3vmin, 6px); /* Space between keys */
+        gap: 6px; /* Space between keys */
         width: 100%;
         height: 100%;
     }
@@ -67,25 +64,21 @@
     /* Grid definitions */
     .left-grid {
         grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(3, 1fr);
+        grid-template-rows: repeat(4, 1fr);
     }
 
     .right-grid {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
     }
 
     /* Individual Key Styles */
     .key {
-        background-color: rgb(0 0 0 / 0.34);
-        color: #ffcf33;
-        border: 2px solid rgb(255 207 51 / 0.82);
-        border-radius: 8px;
-        backdrop-filter: blur(2px);
-        box-shadow:
-            inset 0 0 0 1px rgb(0 0 0 / 0.3),
-            0 4px 14px rgb(0 0 0 / 0.34);
-        font-size: clamp(1rem, 4.8vmin, 1.5em); /* Larger text */
+        background-color: #3a3a3a; /* Dark key background */
+        color: #e0e0e0; /* Light key text */
+        border: 1px solid #555;
+        border-radius: 5px;
+        font-size: 1.5em; /* Larger text */
         font-weight: bold;
         cursor: pointer;
         display: flex;
@@ -101,61 +94,20 @@
         font-size: 0.4em;
         font-weight: normal;
         margin-top: 2px;
-        color: rgb(255 207 51 / 0.72);
+        color: #aaa;
     }
 
     .key.active {
-        background-color: rgb(255 207 51 / 0.72);
-        color: #000;
+        background-color: #6a6a6a;
         transform: scale(0.95); /* Slight shrink effect on press */
     }
 
     .arrow-key {
-        font-size: clamp(1.2rem, 6vmin, 2em); /* Make arrows bigger */
-        position: relative;
-        color: transparent;
-    }
-
-    .arrow-key::before {
-        content: "";
-        width: min(42%, 26px);
-        height: min(42%, 26px);
-        border-radius: 50%;
-        background: rgb(255 207 51 / 0.86);
-        box-shadow:
-            inset -2px -2px 0 rgb(0 0 0 / 0.4),
-            inset 2px 2px 0 rgb(255 255 255 / 0.55),
-            0 2px 0 rgb(0 0 0 / 0.45);
-    }
-
-    .arrow-key::after {
-        content: "";
-        position: absolute;
-        width: min(24%, 16px);
-        height: min(28%, 18px);
-        border-radius: 999px;
-        background: rgb(0 0 0 / 0.78);
-        transform-origin: 50% 100%;
-    }
-
-    .arrow-up::after {
-        transform: translateY(-70%) rotate(0deg);
-    }
-
-    .arrow-left::after {
-        transform: translateX(-70%) rotate(-90deg);
-    }
-
-    .arrow-right::after {
-        transform: translateX(70%) rotate(90deg);
-    }
-
-    .arrow-down::after {
-        transform: translateY(70%) rotate(180deg);
+        font-size: 2em; /* Make arrows bigger */
     }
 
     .ok-key {
-        font-size: clamp(1rem, 4.2vmin, 1.3em);
+        font-size: 1.3em;
     }
 
     /* Styles for specifically smaller keys */
@@ -183,8 +135,7 @@
     #right-keys {
         display: none;
         position: absolute;
-        bottom: max(8px, env(safe-area-inset-bottom));
-        z-index: 5;
+        bottom: 0;
     }
 
     #left-keys {
@@ -213,24 +164,16 @@
         display: flex;
     }
 
-    body.kbd-portrait #left-keys {
-        left: max(8px, env(safe-area-inset-left));
-        width: clamp(124px, 36dvw, 164px);
-        height: clamp(124px, 18dvh, 164px);
-    }
-
+    body.kbd-portrait #left-keys,
     body.kbd-portrait #right-keys {
-        right: max(8px, env(safe-area-inset-right));
-        width: clamp(108px, 31dvw, 142px);
-        height: clamp(104px, 15dvh, 136px);
+        width: 50%;
+        height: 220px;
     }
 
     body.kbd-landscape #left-keys,
     body.kbd-landscape #right-keys {
-        width: clamp(116px, 19dvw, 156px);
-        height: clamp(150px, 72dvh, 240px);
-        bottom: max(8px, env(safe-area-inset-bottom));
-        top: auto;
+        width: 220px;
+        height: 100%;
     }
 
     /* max height in landscape mode */
@@ -239,20 +182,13 @@
         max-height: 400px;
     }
 
-    body.kbd-landscape #screen-area {
-        left: 0;
-        right: 0;
+    body.kbd-portrait #screen-area {
+        bottom: 220px;
     }
 
-    @media (max-width: 380px) {
-        .key span {
-            display: none;
-        }
-
-        .small-key {
-            width: 82%;
-            height: 82%;
-        }
+    body.kbd-landscape #screen-area {
+        left: 220px;
+        right: 220px;
     }
 
 </style>
@@ -263,26 +199,34 @@
     </div>
     <div id="left-keys" class="keypad-part">
         <div class="key-grid left-grid">
-            <span></span>
-            <button data-key="ArrowUp" class="key arrow-key arrow-up" aria-label="Up">Up</button>
-            <span></span>
-            <button data-key="ArrowLeft" class="key arrow-key arrow-left" aria-label="Left">Left</button>
-            <span></span>
-            <button data-key="ArrowRight" class="key arrow-key arrow-right" aria-label="Right">Right</button>
-            <span></span>
-            <button data-key="ArrowDown" class="key arrow-key arrow-down" aria-label="Down">Down</button>
-            <span></span>
+            <button data-key="Digit1" class="key">1</button>
+            <button data-key="Digit2" class="key">2 <span>ABC</span></button>
+            <button data-key="Digit3" class="key">3 <span>DEF</span></button>
+            <button data-key="Digit4" class="key">4 <span>GHI</span></button>
+            <button data-key="Digit5" class="key">5 <span>JKL</span></button>
+            <button data-key="Digit6" class="key">6 <span>MNO</span></button>
+            <button data-key="Digit7" class="key">7 <span>PQRS</span></button>
+            <button data-key="Digit8" class="key">8 <span>TUV</span></button>
+            <button data-key="Digit9" class="key">9 <span>WXYZ</span></button>
+            <button data-key="NumpadAsterisk" class="key">*</button>
+            <button data-key="Digit0" class="key">0 <span>+</span></button>
+            <button data-key="NumpadDivide" class="key">#</button>
         </div>
     </div>
     <div id="right-keys" class="keypad-part">
          <div class="key-grid right-grid">
             <button data-key="F1" class="key">L</button>
+            <button data-key="ArrowUp" class="key arrow-key" aria-label="Up">↑</button>
             <button data-key="F2" class="key">R</button>
-            <button data-key="Digit5" class="key ok-key">5</button>
+            <button data-key="ArrowLeft" class="key arrow-key" aria-label="Left">←</button>
             <button data-key="Enter" class="key ok-key">OK</button>
+            <button data-key="ArrowRight" class="key arrow-key" aria-label="Right">→</button>
+            <button data-key="Escape" class="key small-key small-key-left">Esc</button>
+            <button data-key="ArrowDown" class="key arrow-key" aria-label="Down">↓</button>
+            <button data-key="Maximize" class="key small-key small-key-right" aria-label="Maximize">⛶</button>
         </div>
     </div>
     <script src="https://cjrtnc.leaningtech.com/20260317_2978/loader.js"></script>
-    <script type="module" src="src/main.js?v=14"></script>
+    <script type="module" src="src/main.js?v=17"></script>
 </body>
 </html>
