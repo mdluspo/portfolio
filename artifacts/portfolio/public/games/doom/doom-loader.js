@@ -15,6 +15,7 @@ const hasWebAssembly = () => {
 
 const statusEl = document.getElementById("status");
 const canvas = document.getElementById("canvas");
+const doomAssetBase = new URL(".", document.currentScript?.src ?? window.location.href);
 const doomKeyMap = {
   w: { key: "w", code: "KeyW", keyCode: 87 },
   a: { key: "a", code: "KeyA", keyCode: 65 },
@@ -93,12 +94,12 @@ function startDoom() {
     elementPointerLock: false,
     lockPointer: false,
     locateFile(path) {
-      return `/games/doom/${path}`;
+      return new URL(path, doomAssetBase).href;
     },
     preRun: [
       function preloadFiles() {
-        window.Module.FS.createPreloadedFile("", "Doom2.wad", "/games/doom/Doom2.wad", true, true);
-        window.Module.FS.createPreloadedFile("", "default.cfg", "/games/doom/default.cfg", true, true);
+        window.Module.FS.createPreloadedFile("", "Doom2.wad", new URL("Doom2.wad", doomAssetBase).href, true, true);
+        window.Module.FS.createPreloadedFile("", "default.cfg", new URL("default.cfg", doomAssetBase).href, true, true);
       },
     ],
     onRuntimeInitialized() {
@@ -248,7 +249,7 @@ function startDoom() {
   }
 
   const script = document.createElement("script");
-  script.src = "/games/doom/websockets-doom.js";
+  script.src = new URL("websockets-doom.js", doomAssetBase).href;
   script.async = true;
   document.body.appendChild(script);
 }
