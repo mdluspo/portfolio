@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { createPortal } from "react-dom";
 import { LockedSection } from "@/components/locked-section";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const CERTIFICATIONS = [
   {
@@ -98,7 +99,7 @@ const GAMES: Array<{
     title: "Bounce Classic",
     meta: "J2ME / JAR / Nokia",
     status: "READY",
-    src: "/games/j2me-web/run.html?app=bounce&mobile=1&fractionScale=1&sound=0&reset=1&v=14",
+    src: "/games/j2me-web/run.html?app=bounce&fractionScale=1&sound=0&reset=1&v=14",
     accent: "bg-[#ff6b6b]",
     label: "BOU",
     thumbnail: "/bounce.jpg",
@@ -109,7 +110,7 @@ const GAMES: Array<{
     title: "Diamond Rush",
     meta: "J2ME / JAR / K790",
     status: "READY",
-    src: "/games/j2me-web/run.html?app=diamond&mobile=1&fractionScale=1&sound=0&reset=1&v=14",
+    src: "/games/j2me-web/run.html?app=diamond&fractionScale=1&sound=0&reset=1&v=14",
     accent: "bg-[#70e1c8]",
     label: "DR",
     thumbnail: "/diamond_rush.jpg",
@@ -118,6 +119,7 @@ const GAMES: Array<{
 ];
 
 export function DesignProcessSection() {
+  const isMobile = useIsMobile();
   const [isGameWindowOpen, setIsGameWindowOpen] = useState(false);
   const [isGameWindowMinimized, setIsGameWindowMinimized] = useState(false);
   const [isGameWindowFullscreen, setIsGameWindowFullscreen] = useState(false);
@@ -136,10 +138,10 @@ export function DesignProcessSection() {
   } | null>(null);
   const canUsePortal = typeof document !== "undefined";
   const selectedGame = GAMES.find((game) => game.id === activeGame);
-  const selectedGameSrc = selectedGame
-    ? `${import.meta.env.BASE_URL.replace(/\/$/, "")}${selectedGame.src}`
-    : "";
   const isJ2meGame = selectedGame?.id === "bounce" || selectedGame?.id === "diamond";
+  const selectedGameSrc = selectedGame
+    ? `${import.meta.env.BASE_URL.replace(/\/$/, "")}${selectedGame.src}${isJ2meGame && isMobile ? "&mobile=1" : ""}`
+    : "";
   const isBounceGame = selectedGame?.id === "bounce";
 
   useEffect(() => {
@@ -382,7 +384,7 @@ export function DesignProcessSection() {
                           ref={gameFrameRef}
                           title={selectedGame.title}
                           src={selectedGameSrc}
-                          key={`${selectedGame.id}-${gameSessionId}`}
+                          key={`${selectedGame.id}-${isMobile ? "mobile" : "desktop"}-${gameSessionId}`}
                           className="block h-full w-full border-0"
                           allow="fullscreen; gamepad"
                         />
