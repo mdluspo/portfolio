@@ -99,7 +99,7 @@ const GAMES: Array<{
     title: "Bounce Classic",
     meta: "J2ME / JAR / Nokia",
     status: "READY",
-    src: "/games/j2me-web/run.html?jar=bounce.jar&fractionScale=1&v=17",
+    src: "/games/j2me-web/run.html?app=bounce&fractionScale=1&sound=0&reset=1&v=19",
     accent: "bg-[#ff6b6b]",
     label: "BOU",
     thumbnail: "/bounce.jpg",
@@ -110,7 +110,7 @@ const GAMES: Array<{
     title: "Diamond Rush",
     meta: "J2ME / JAR / K790",
     status: "READY",
-    src: "/games/j2me-web/run.html?jar=diamond.jar&fractionScale=1&v=17",
+    src: "/games/j2me-web/run.html?app=diamond&fractionScale=1&sound=0&reset=1&v=19",
     accent: "bg-[#70e1c8]",
     label: "DR",
     thumbnail: "/diamond_rush.jpg",
@@ -148,6 +148,29 @@ export function DesignProcessSection() {
     frame?.contentWindow?.focus();
     frame?.contentWindow?.postMessage("resume-game", "*");
   };
+  const sendGameKey = (type: "keydown" | "keyup", key: string, code = key, keyCode?: number) => {
+    const frameWindow = gameFrameRef.current?.contentWindow;
+    if (!frameWindow) return;
+
+    const eventInit = {
+      key,
+      code,
+      keyCode,
+      which: keyCode,
+      bubbles: true,
+      cancelable: true,
+    } as KeyboardEventInit;
+
+    try {
+      const gameDocument = frameWindow.document;
+      frameWindow.dispatchEvent(new KeyboardEvent(type, eventInit));
+      gameDocument.dispatchEvent(new KeyboardEvent(type, eventInit));
+      gameDocument.getElementById("canvas")?.dispatchEvent(new KeyboardEvent(type, eventInit));
+      gameDocument.getElementById("display")?.dispatchEvent(new KeyboardEvent(type, eventInit));
+    } catch (error) {
+      console.warn("Unable to forward key to game iframe.", error);
+    }
+  };
 
   useEffect(() => {
     if (!isGameWindowOpen) return;
@@ -162,6 +185,24 @@ export function DesignProcessSection() {
       document.body.style.overflow = previousBodyOverflow;
     };
   }, [isGameWindowOpen]);
+
+  useEffect(() => {
+    if (!isGameWindowOpen || !selectedGame || isGameWindowMinimized) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      focusGameFrame();
+      sendGameKey(event.type as "keydown" | "keyup", "Escape", "Escape", 27);
+    };
+
+    window.addEventListener("keydown", handleEscape, true);
+    window.addEventListener("keyup", handleEscape, true);
+    return () => {
+      window.removeEventListener("keydown", handleEscape, true);
+      window.removeEventListener("keyup", handleEscape, true);
+    };
+  }, [isGameWindowOpen, isGameWindowMinimized, selectedGame]);
 
   const startGameWindowDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.button !== 0 || isGameWindowFullscreen) return;
