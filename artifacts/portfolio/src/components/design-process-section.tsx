@@ -88,7 +88,7 @@ const GAMES: Array<{
     title: "DOOM II",
     meta: "FPS / WAD / 1994",
     status: "READY",
-    src: "/games/doom/doom.html?v=8",
+    src: "/games/doom/doom.html?v=9",
     accent: "bg-[#ffcf33]",
     label: "DII",
     thumbnail: "/doom.jpg",
@@ -99,7 +99,7 @@ const GAMES: Array<{
     title: "Bounce Classic",
     meta: "J2ME / JAR / Nokia",
     status: "READY",
-    src: "/games/j2me-web/run.html?app=bounce&fractionScale=1&sound=0&reset=1&v=14",
+    src: "/games/j2me-web/run.html?app=bounce&fractionScale=1&sound=0&reset=1&v=16",
     accent: "bg-[#ff6b6b]",
     label: "BOU",
     thumbnail: "/bounce.jpg",
@@ -110,7 +110,7 @@ const GAMES: Array<{
     title: "Diamond Rush",
     meta: "J2ME / JAR / K790",
     status: "READY",
-    src: "/games/j2me-web/run.html?app=diamond&fractionScale=1&sound=0&reset=1&v=14",
+    src: "/games/j2me-web/run.html?app=diamond&fractionScale=1&sound=0&reset=1&v=16",
     accent: "bg-[#70e1c8]",
     label: "DR",
     thumbnail: "/diamond_rush.jpg",
@@ -142,7 +142,6 @@ export function DesignProcessSection() {
   const selectedGameSrc = selectedGame
     ? `${import.meta.env.BASE_URL.replace(/\/$/, "")}${selectedGame.src}${isJ2meGame && isMobile ? "&mobile=1" : ""}`
     : "";
-  const isBounceGame = selectedGame?.id === "bounce";
 
   useEffect(() => {
     if (!isGameWindowOpen) return;
@@ -268,11 +267,9 @@ export function DesignProcessSection() {
                       ? "h-[100dvh] w-[100vw] max-w-none"
                       : isGameWindowMinimized
                         ? "h-auto w-[calc(100vw-1rem)] max-w-md sm:w-full"
-                        : isBounceGame
-                          ? "h-[82dvh] w-[calc(100vw-1rem)] max-w-[640px] sm:h-[76vh] sm:w-[min(96vw,640px)]"
-                          : isJ2meGame
-                            ? "h-[88dvh] w-[calc(100vw-1rem)] max-w-[760px] sm:h-[92vh] sm:w-[min(96vw,760px)]"
-                            : "h-[82dvh] w-[calc(100vw-1rem)] max-w-5xl sm:w-full"
+                        : isJ2meGame
+                          ? "h-[92dvh] w-[calc(100vw-1rem)] max-w-[1180px] sm:h-[88vh] sm:w-[min(96vw,1180px)]"
+                          : "h-[92dvh] w-[calc(100vw-1rem)] max-w-[1280px] sm:w-[min(96vw,1280px)]"
                   }`}
                   style={
                     isGameWindowFullscreen
