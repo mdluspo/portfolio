@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Arcade</title>
+  <link rel="stylesheet" href="arcade.css">
+</head>
+<body>
+  <main class="cabinet">
+    <header class="topbar">
+      <a href="/" class="back">BACK</a>
+      <div>
+        <p class="eyebrow">PORTFOLIO ARCADE</p>
+        <h1 id="title">LOADING</h1>
+      </div>
+      <div class="stats"><span id="score">000000</span><span id="status">READY</span></div>
+    </header>
+    <section class="screen-wrap">
+      <canvas id="game" width="960" height="540" aria-label="Arcade game"></canvas>
+      <div id="message" class="message" hidden></div>
+    </section>
+    <footer class="controls">
+      <span>ARROWS / WASD MOVE</span><span>SPACE JUMP</span><button id="restart">RESTART</button>
+    </footer>
+    <nav class="touch-controls" aria-label="Touch controls">
+      <button data-key="ArrowLeft">LEFT</button><button data-key="Space">JUMP</button><button data-key="ArrowRight">RIGHT</button>
+    </nav>
+  </main>
+  <script src="arcade.js"></script>
+</body>
+</html>

@@ -97,24 +97,24 @@ const GAMES: Array<{
   {
     id: "bounce",
     title: "Bounce Classic",
-    meta: "J2ME / JAR / Nokia",
+    meta: "Canvas Arcade / Nokia-inspired",
     status: "READY",
-    src: "/games/j2me-web/run.html?app=bounce&fractionScale=1&sound=0&reset=1&v=20",
+    src: "/games/arcade/index.html?game=bounce&v=2",
     accent: "bg-[#ff6b6b]",
     label: "BOU",
     thumbnail: "/bounce.jpg",
-    controls: ["Left: four arrows", "Right: L, R, 5, OK", "5 / OK: select", "L / R: soft keys"],
+    controls: ["Left / A: roll left", "Right / D: roll right", "Space / Up / W: jump", "Collect gems and reach the flag"],
   },
   {
     id: "diamond",
     title: "Diamond Rush",
-    meta: "J2ME / JAR / K790",
+    meta: "Canvas Arcade / cave run",
     status: "READY",
-    src: "/games/j2me-web/run.html?app=diamond&fractionScale=1&sound=0&reset=1&v=20",
+    src: "/games/arcade/index.html?game=diamond&v=2",
     accent: "bg-[#70e1c8]",
     label: "DR",
     thumbnail: "/diamond_rush.jpg",
-    controls: ["Left: four arrows", "Right: L, R, 5, OK", "5 / OK: select / action", "L / R: soft keys"],
+    controls: ["Left / A: move left", "Right / D: move right", "Space / Up / W: jump", "Collect every gem to open the exit"],
   },
 ];
 
@@ -138,9 +138,9 @@ export function DesignProcessSection() {
   } | null>(null);
   const canUsePortal = typeof document !== "undefined";
   const selectedGame = GAMES.find((game) => game.id === activeGame);
-  const isJ2meGame = selectedGame?.id === "bounce" || selectedGame?.id === "diamond";
+  const isArcadeGame = selectedGame?.id === "bounce" || selectedGame?.id === "diamond";
   const selectedGameSrc = selectedGame
-    ? `${import.meta.env.BASE_URL.replace(/\/$/, "")}${selectedGame.src}${isJ2meGame && isMobile ? "&mobile=1" : ""}`
+    ? `${import.meta.env.BASE_URL.replace(/\/$/, "")}${selectedGame.src}`
     : "";
   const focusGameFrame = () => {
     const frame = gameFrameRef.current;
@@ -314,7 +314,7 @@ export function DesignProcessSection() {
                       ? "h-[100dvh] w-[100vw] max-w-none"
                       : isGameWindowMinimized
                         ? "h-auto w-[calc(100vw-1rem)] max-w-md sm:w-full"
-                        : isJ2meGame
+                        : isArcadeGame
                           ? "h-[92dvh] w-[calc(100vw-1rem)] max-w-[1180px] sm:h-[88vh] sm:w-[min(96vw,1180px)]"
                           : "h-[82dvh] w-[calc(100vw-1rem)] max-w-5xl sm:w-full"
                   }`}
