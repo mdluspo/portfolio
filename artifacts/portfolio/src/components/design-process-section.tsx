@@ -70,7 +70,11 @@ const CERTIFICATIONS = [
   },
 ];
 
-type GameId = "doom" | "bounce" | "diamond";
+type GameId = "doom";
+
+type LockableScreenOrientation = ScreenOrientation & {
+  lock?: (orientation: "landscape") => Promise<void>;
+};
 
 const GAMES: Array<{
   id: GameId;
@@ -88,33 +92,11 @@ const GAMES: Array<{
     title: "DOOM II",
     meta: "FPS / WAD / 1994",
     status: "READY",
-    src: "/games/doom/doom.html?v=10",
+    src: "/games/doom/doom.html?v=11",
     accent: "bg-[#ffcf33]",
     label: "DII",
     thumbnail: "/doom.jpg",
-    controls: ["Drag circle: move", "Fire: shoot", "Run: hold run", "Use: doors / switches", "Menu: pause menu", "No jump in classic Doom"],
-  },
-  {
-    id: "bounce",
-    title: "Bounce Classic",
-    meta: "Canvas Arcade / Nokia-inspired",
-    status: "READY",
-    src: "/games/arcade/index.html?game=bounce&v=2",
-    accent: "bg-[#ff6b6b]",
-    label: "BOU",
-    thumbnail: "/bounce.jpg",
-    controls: ["Left / A: roll left", "Right / D: roll right", "Space / Up / W: jump", "Collect gems and reach the flag"],
-  },
-  {
-    id: "diamond",
-    title: "Diamond Rush",
-    meta: "Canvas Arcade / cave run",
-    status: "READY",
-    src: "/games/arcade/index.html?game=diamond&v=2",
-    accent: "bg-[#70e1c8]",
-    label: "DR",
-    thumbnail: "/diamond_rush.jpg",
-    controls: ["Left / A: move left", "Right / D: move right", "Space / Up / W: jump", "Collect every gem to open the exit"],
+    controls: ["Move: arrows / WASD / joystick", "Fire: Ctrl / Fire button", "Run: Shift / Run button", "Use: Space / Use button", "Menu: Esc"],
   },
 ];
 
@@ -138,10 +120,24 @@ export function DesignProcessSection() {
   } | null>(null);
   const canUsePortal = typeof document !== "undefined";
   const selectedGame = GAMES.find((game) => game.id === activeGame);
-  const isArcadeGame = selectedGame?.id === "bounce" || selectedGame?.id === "diamond";
   const selectedGameSrc = selectedGame
     ? `${import.meta.env.BASE_URL.replace(/\/$/, "")}${selectedGame.src}`
     : "";
+  const openDoom = () => {
+    setActiveGame("doom");
+    setShowGameControls(false);
+    setGameWindowPosition(null);
+    setGameWindowDrag(null);
+    setIsGameWindowMinimized(false);
+    setIsGameWindowFullscreen(isMobile);
+    setGameSessionId((current) => current + 1);
+    setIsGameWindowOpen(true);
+
+    if (isMobile) {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+      (screen.orientation as LockableScreenOrientation | undefined)?.lock?.("landscape").catch(() => {});
+    }
+  };
   const focusGameFrame = () => {
     const frame = gameFrameRef.current;
     frame?.focus();
@@ -293,7 +289,7 @@ export function DesignProcessSection() {
 
               <button
                 type="button"
-                onClick={() => setIsGameWindowOpen(true)}
+                onClick={openDoom}
                 className="border-cartoon bg-secondary px-7 py-3 rounded-lg font-display text-base font-black uppercase shadow-cartoon transition-transform hover:-translate-y-1"
               >
                 Press Me
@@ -314,8 +310,8 @@ export function DesignProcessSection() {
                       ? "h-[100dvh] w-[100vw] max-w-none"
                       : isGameWindowMinimized
                         ? "h-auto w-[calc(100vw-1rem)] max-w-md sm:w-full"
-                        : isArcadeGame
-                          ? "h-[92dvh] w-[calc(100vw-1rem)] max-w-[1180px] sm:h-[88vh] sm:w-[min(96vw,1180px)]"
+                        : isMobile
+                          ? "h-[100dvh] w-[100vw] max-w-none"
                           : "h-[82dvh] w-[calc(100vw-1rem)] max-w-5xl sm:w-full"
                   }`}
                   style={
@@ -341,21 +337,8 @@ export function DesignProcessSection() {
                     className="flex min-h-[72px] shrink-0 cursor-move flex-wrap items-center justify-between gap-2 border-b-[3px] border-black bg-secondary px-3 py-3 sm:px-4"
                   >
                     <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-                      {activeGame && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveGame(null);
-                            setShowGameControls(false);
-                            setGameSessionId((current) => current + 1);
-                          }}
-                          className="border-[2px] border-black bg-white px-1.5 py-1 font-display text-[9px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:px-2 sm:text-[10px]"
-                        >
-                          Back
-                        </button>
-                      )}
                       <span className="truncate font-display text-xs font-black uppercase tracking-widest sm:text-sm">
-                        {selectedGame?.title ?? "GAMES.EXE"}
+                        {selectedGame?.title ?? "DOOM II"}
                       </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
@@ -459,51 +442,7 @@ export function DesignProcessSection() {
                           </div>
                         )}
                       </div>
-                    ) : (
-                      <div className="flex min-h-0 flex-1 flex-col bg-white">
-                        <div className="flex flex-1 items-center justify-center overflow-y-auto px-3 py-5 sm:px-6 sm:py-8">
-                          <div className="grid w-full max-w-4xl grid-cols-1 gap-5 md:grid-cols-3">
-                            {GAMES.map((game) => (
-                              <button
-                                key={game.id}
-                                type="button"
-                                onClick={() => {
-                                  setActiveGame(game.id);
-                                  setShowGameControls(false);
-                                  setGameWindowPosition(null);
-                                  setGameWindowDrag(null);
-                                  setGameSessionId((current) => current + 1);
-                                }}
-                                className="group border-[3px] border-black bg-white p-3 text-left shadow-[5px_5px_0_0_#000] transition-transform hover:-translate-y-1"
-                              >
-                                <div className={`mb-3 flex aspect-[16/10] items-center justify-center overflow-hidden border-[3px] border-black ${game.accent}`}>
-                                  <img
-                                    src={game.thumbnail}
-                                    alt={`${game.title} thumbnail`}
-                                    className="h-full w-full object-cover"
-                                    draggable={false}
-                                  />
-                                </div>
-                                <div className="flex items-start justify-between gap-3">
-                                  <div>
-                                    <h3 className="font-display text-2xl font-black uppercase leading-none">
-                                      {game.title}
-                                    </h3>
-                                    <p className="mt-1 font-sans text-xs font-black uppercase text-gray-500">
-                                      {game.meta}
-                                    </p>
-                                  </div>
-                                  <span className="border-[2px] border-black bg-secondary px-2 py-1 font-display text-[10px] font-black uppercase">
-                                    {game.status}
-                                  </span>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                      </div>
-                    )
+                    ) : null
                   )}
                 </motion.div>
               </div>,
