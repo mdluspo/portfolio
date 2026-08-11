@@ -23,7 +23,24 @@ let isMobile = sp.get('mobile');
 let display = null;
 let screenCtx = null;
 
-let fractionScale = sp.get('fractionScale') || (localStorage && localStorage.getItem("pl.zb3.freej2me.fractionScale") === "true");
+function getStoredValue(key) {
+    try {
+        return window.localStorage?.getItem(key);
+    } catch (error) {
+        console.warn("Storage is unavailable; continuing without saved J2ME settings.", error);
+        return null;
+    }
+}
+
+function setStoredValue(key, value) {
+    try {
+        window.localStorage?.setItem(key, value);
+    } catch (error) {
+        console.warn("Storage is unavailable; setting was not saved.", error);
+    }
+}
+
+let fractionScale = sp.get('fractionScale') || (getStoredValue("pl.zb3.freej2me.fractionScale") === "true");
 let scaleSet = false;
 
 const keyRepeatManager = new KeyRepeatManager();
@@ -98,7 +115,7 @@ function setListeners() {
         if (kind === 'click') {
             if (key === 'Maximize') {
                 fractionScale = !fractionScale;
-                localStorage && localStorage.setItem("pl.zb3.freej2me.fractionScale", fractionScale);
+                setStoredValue("pl.zb3.freej2me.fractionScale", String(fractionScale));
                 autoscale();
             }
         } else if (codeMap[key]) {
@@ -248,7 +265,13 @@ async function ensureAppInstalled(lib, appId) {
     }
 
     if (resetInstall || reinstall || !appFile) {
-        await launcherUtil.installFromBundle(cheerpjWebRoot + "/apps/", appId);
+        try {
+            await launcherUtil.installFromBundle(cheerpjWebRoot + "/apps/", appId);
+        } catch (error) {
+            console.warn("Bundled game install failed; clearing app data and retrying once.", error);
+            await launcherUtil.uninstallApp(appId).catch(() => {});
+            await launcherUtil.installFromBundle(cheerpjWebRoot + "/apps/", appId);
+        }
     }
 }
 
@@ -425,5 +448,13 @@ function showCrash(e) {
     document.getElementById('loading').hidden = false;
     document.getElementById('loading').textContent = `Crash: ${message}`;
 }
+
+window.addEventListener('error', (event) => {
+    showCrash(event.error || event.message);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    showCrash(event.reason);
+});
 
 init().catch(showCrash);
