@@ -96,7 +96,7 @@ const GAMES: Array<{
     accent: "bg-[#ffcf33]",
     label: "DII",
     thumbnail: "/doom.jpg",
-    controls: ["Move: arrows / WASD / joystick", "Fire: Ctrl / Fire button", "Run: Shift / Run button", "Use: Space / Use button", "Menu: Esc"],
+    controls: ["Left stick: move / menu navigation", "Right stick: turn / aim", "Fire: Space / Fire button", "Use: E / Use button", "Run: Shift / Run button", "Menu: Esc / Menu button"],
   },
 ];
 

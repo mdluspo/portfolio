@@ -15,32 +15,32 @@ const hasWebAssembly = () => {
 
 const statusEl = document.getElementById("status");
 const canvas = document.getElementById("canvas");
-const joystick = document.getElementById("joystick");
-const joystickKnob = document.getElementById("joystick-knob");
+const focusMenu = document.getElementById("focus-menu");
+const resumeButton = document.getElementById("resume-game");
 const doomKeyMap = {
-  w: { key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
-  a: { key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 },
-  s: { key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
-  d: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
-  e: { key: " ", code: "Space", keyCode: 32 },
+  e: { key: "e", code: "KeyE", keyCode: 69 },
+  " ": { key: " ", code: "Space", keyCode: 32 },
 };
 const heldMobileKeys = new Map();
+const lastTapById = new Map();
 
 function setStatus(text) {
   if (statusEl) statusEl.textContent = text;
 }
 
 function dispatchDoomKey(type, keyConfig) {
-  canvas?.dispatchEvent(
-    new KeyboardEvent(type, {
+  const eventInit = {
       key: keyConfig.key,
       code: keyConfig.code,
       keyCode: keyConfig.keyCode,
       which: keyConfig.keyCode,
       bubbles: true,
       cancelable: true,
-    }),
-  );
+  };
+
+  window.dispatchEvent(new KeyboardEvent(type, eventInit));
+  document.dispatchEvent(new KeyboardEvent(type, eventInit));
+  canvas?.dispatchEvent(new KeyboardEvent(type, eventInit));
 }
 
 function holdDoomKey(id, keyConfig) {
@@ -60,17 +60,55 @@ function releaseAllMobileKeys() {
   Array.from(heldMobileKeys.keys()).forEach(releaseDoomKey);
 }
 
+function tapDoomKey(id, keyConfig, cooldown = 180) {
+  const now = performance.now();
+  if (now - (lastTapById.get(id) ?? 0) < cooldown) return;
+  lastTapById.set(id, now);
+  dispatchDoomKey("keydown", keyConfig);
+  window.setTimeout(() => dispatchDoomKey("keyup", keyConfig), 42);
+}
+
+function setFocusMenuVisible(isVisible) {
+  focusMenu?.classList.toggle("is-visible", isVisible);
+}
+
+function resumeGame() {
+  setFocusMenuVisible(false);
+  canvas?.focus();
+}
+
+function setControlMode(mode) {
+  document.body.classList.toggle("menu-mode", mode === "menu");
+}
+
+function isMenuMode() {
+  return document.body.classList.contains("menu-mode");
+}
+
 function setupMobileControls() {
-  const directions = {
+  const stickBindings = {
+    move: {
+      up: { key: "w", code: "KeyW", keyCode: 87 },
+      down: { key: "s", code: "KeyS", keyCode: 83 },
+      left: { key: "a", code: "KeyA", keyCode: 65 },
+      right: { key: "d", code: "KeyD", keyCode: 68 },
+    },
+    aim: {
+      left: { key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 },
+      right: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
+    },
+  };
+  const menuBindings = {
     up: { key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
     down: { key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
     left: { key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 },
     right: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
   };
 
-  const applyJoystick = (clientX, clientY) => {
-    if (!joystick || !joystickKnob) return;
-    const rect = joystick.getBoundingClientRect();
+  const applyJoystick = (stick, knob, stickName, clientX, clientY) => {
+    const bindings = stickBindings[stickName];
+    if (!bindings) return;
+    const rect = stick.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     const rawX = clientX - centerX;
@@ -81,7 +119,7 @@ function setupMobileControls() {
     const x = rawX * scale;
     const y = rawY * scale;
 
-    joystickKnob.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+    knob.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
 
     const threshold = rect.width * 0.16;
     const active = {
@@ -91,8 +129,39 @@ function setupMobileControls() {
       down: rawY > threshold,
     };
 
-    Object.entries(directions).forEach(([name, keyConfig]) => {
-      const id = `joy-${name}`;
+    if (stickName === "move" && isMenuMode()) {
+      Object.keys(bindings).forEach((name) => releaseDoomKey(`${stickName}-${name}`));
+      const horizontal = Math.abs(rawX);
+      const vertical = Math.abs(rawY);
+      const dominant =
+        Math.max(horizontal, vertical) <= threshold
+          ? null
+          : vertical >= horizontal
+            ? rawY < 0
+              ? "up"
+              : "down"
+            : rawX < 0
+              ? "left"
+              : "right";
+
+      if (dominant && menuBindings[dominant]) {
+        tapDoomKey(`menu-${dominant}`, menuBindings[dominant], 260);
+      }
+      return;
+    }
+
+    if (stickName === "aim") {
+      Object.keys(bindings).forEach((name) => releaseDoomKey(`${stickName}-${name}`));
+      const aimThreshold = rect.width * 0.24;
+      const dominant = Math.abs(rawX) <= aimThreshold ? null : rawX < 0 ? "left" : "right";
+      if (dominant && bindings[dominant]) {
+        tapDoomKey(`aim-${dominant}`, bindings[dominant], 170);
+      }
+      return;
+    }
+
+    Object.entries(bindings).forEach(([name, keyConfig]) => {
+      const id = `${stickName}-${name}`;
       if (active[name]) {
         holdDoomKey(id, keyConfig);
       } else {
@@ -101,30 +170,37 @@ function setupMobileControls() {
     });
   };
 
-  const resetJoystick = () => {
-    joystickKnob && (joystickKnob.style.transform = "translate(-50%, -50%)");
-    Object.keys(directions).forEach((name) => releaseDoomKey(`joy-${name}`));
+  const resetJoystick = (knob, stickName) => {
+    knob.style.transform = "translate(-50%, -50%)";
+    Object.keys(stickBindings[stickName] ?? {}).forEach((name) => releaseDoomKey(`${stickName}-${name}`));
   };
 
-  joystick?.addEventListener("pointerdown", (event) => {
-    event.preventDefault();
-    joystick.setPointerCapture(event.pointerId);
-    canvas?.focus();
-    applyJoystick(event.clientX, event.clientY);
-  });
+  document.querySelectorAll("[data-stick]").forEach((stick) => {
+    const stickName = stick.dataset.stick;
+    const knob = stick.querySelector(".joystick-knob");
+    if (!stickName || !knob) return;
 
-  joystick?.addEventListener("pointermove", (event) => {
-    if (!joystick.hasPointerCapture(event.pointerId)) return;
-    event.preventDefault();
-    applyJoystick(event.clientX, event.clientY);
-  });
+    stick.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      stick.setPointerCapture(event.pointerId);
+      resumeGame();
+      if (stickName === "aim") setControlMode("game");
+      applyJoystick(stick, knob, stickName, event.clientX, event.clientY);
+    });
 
-  ["pointerup", "pointercancel", "pointerleave"].forEach((type) => {
-    joystick?.addEventListener(type, (event) => {
-      if (joystick.hasPointerCapture(event.pointerId)) {
-        joystick.releasePointerCapture(event.pointerId);
-      }
-      resetJoystick();
+    stick.addEventListener("pointermove", (event) => {
+      if (!stick.hasPointerCapture(event.pointerId)) return;
+      event.preventDefault();
+      applyJoystick(stick, knob, stickName, event.clientX, event.clientY);
+    });
+
+    ["pointerup", "pointercancel", "pointerleave"].forEach((type) => {
+      stick.addEventListener(type, (event) => {
+        if (stick.hasPointerCapture(event.pointerId)) {
+          stick.releasePointerCapture(event.pointerId);
+        }
+        resetJoystick(knob, stickName);
+      });
     });
   });
 
@@ -135,12 +211,14 @@ function setupMobileControls() {
       keyCode: Number(button.dataset.doomKeycode),
     };
     const id = `button-${keyConfig.code}`;
+    const nextMode = button.dataset.controlMode;
 
     button.addEventListener("pointerdown", (event) => {
       event.preventDefault();
       button.setPointerCapture?.(event.pointerId);
       button.classList.add("is-held");
-      canvas?.focus();
+      resumeGame();
+      if (nextMode === "game" || nextMode === "menu") setControlMode(nextMode);
       holdDoomKey(id, keyConfig);
     });
 
@@ -154,6 +232,23 @@ function setupMobileControls() {
   });
 
   window.addEventListener("blur", releaseAllMobileKeys);
+  canvas?.addEventListener("blur", () => {
+    releaseAllMobileKeys();
+    setControlMode("menu");
+    setFocusMenuVisible(true);
+  });
+  canvas?.addEventListener("pointerleave", (event) => {
+    if (event.pointerType !== "mouse") return;
+    releaseAllMobileKeys();
+    setControlMode("menu");
+    setFocusMenuVisible(true);
+  });
+  canvas?.addEventListener("pointerdown", resumeGame);
+  focusMenu?.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    resumeGame();
+  });
+  resumeButton?.addEventListener("click", resumeGame);
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) releaseAllMobileKeys();
   });
@@ -212,8 +307,9 @@ function startDoom() {
   window.addEventListener(
     "keydown",
     (event) => {
+      if (!event.isTrusted) return;
       const mapped = doomKeyMap[event.key.toLowerCase()];
-      if (!mapped || event.repeat) return;
+      if (!mapped || event.repeat || mapped.code === event.code) return;
       event.preventDefault();
       dispatchDoomKey("keydown", mapped);
     },
@@ -223,8 +319,9 @@ function startDoom() {
   window.addEventListener(
     "keyup",
     (event) => {
+      if (!event.isTrusted) return;
       const mapped = doomKeyMap[event.key.toLowerCase()];
-      if (!mapped) return;
+      if (!mapped || mapped.code === event.code) return;
       event.preventDefault();
       dispatchDoomKey("keyup", mapped);
     },
@@ -233,7 +330,7 @@ function startDoom() {
 
   window.addEventListener("message", (event) => {
     if (event.data !== "resume-game") return;
-    canvas?.focus();
+    resumeGame();
   });
 
   const script = document.createElement("script");
