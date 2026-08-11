@@ -21,6 +21,13 @@ const doomKeyMap = {
   e: { key: "e", code: "KeyE", keyCode: 69 },
   " ": { key: " ", code: "Space", keyCode: 32 },
 };
+const menuKeyboardMap = {
+  w: { key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
+  s: { key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
+  arrowup: { key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
+  arrowdown: { key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
+  enter: { key: "Enter", code: "Enter", keyCode: 13 },
+};
 const heldMobileKeys = new Map();
 const lastTapById = new Map();
 const weaponKeys = [
@@ -408,6 +415,13 @@ function startDoom() {
     "keydown",
     (event) => {
       if (!event.isTrusted) return;
+      const menuMapped = isMenuMode() ? menuKeyboardMap[event.key.toLowerCase()] : null;
+      if (menuMapped && !event.repeat) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        dispatchDoomKey("keydown", menuMapped);
+        return;
+      }
       const mapped = doomKeyMap[event.key.toLowerCase()];
       if (!mapped || event.repeat || mapped.code === event.code) return;
       event.preventDefault();
@@ -420,6 +434,13 @@ function startDoom() {
     "keyup",
     (event) => {
       if (!event.isTrusted) return;
+      const menuMapped = isMenuMode() ? menuKeyboardMap[event.key.toLowerCase()] : null;
+      if (menuMapped) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        dispatchDoomKey("keyup", menuMapped);
+        return;
+      }
       const mapped = doomKeyMap[event.key.toLowerCase()];
       if (!mapped || mapped.code === event.code) return;
       event.preventDefault();

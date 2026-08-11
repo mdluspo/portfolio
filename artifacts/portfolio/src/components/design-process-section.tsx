@@ -92,7 +92,7 @@ const GAMES: Array<{
     title: "DOOM II",
     meta: "FPS / WAD / 1994",
     status: "READY",
-    src: "/games/doom/doom.html?v=14",
+    src: "/games/doom/doom.html?v=15",
     accent: "bg-[#ffcf33]",
     label: "DII",
     thumbnail: "/doom.jpg",
@@ -312,7 +312,7 @@ export function DesignProcessSection() {
                         ? "h-auto w-[calc(100vw-1rem)] max-w-md sm:w-full"
                         : isMobile
                           ? "h-[100dvh] w-[100vw] max-w-none"
-                          : "h-[82dvh] w-[calc(100vw-1rem)] max-w-5xl sm:w-full"
+                          : "h-[90dvh] w-[calc(100vw-1rem)] max-w-7xl sm:w-full"
                   }`}
                   style={
                     isGameWindowFullscreen
@@ -351,16 +351,6 @@ export function DesignProcessSection() {
                             className="border-[2px] border-black bg-white px-1.5 py-1 font-display text-[9px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:px-2 sm:text-[10px]"
                           >
                             Controls
-                          </button>
-                        )}
-                        {selectedGame && !isGameWindowMinimized && (
-                          <button
-                            type="button"
-                            aria-label="Resume game"
-                            onClick={focusGameFrame}
-                            className="border-[2px] border-black bg-white px-1.5 py-1 font-display text-[9px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:px-2 sm:text-[10px]"
-                          >
-                            Resume
                           </button>
                         )}
                         <button
