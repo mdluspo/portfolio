@@ -19,6 +19,7 @@
 
       body {
         display: block;
+        touch-action: none;
       }
 
       #canvas {
@@ -29,6 +30,76 @@
         image-rendering: pixelated;
         outline: none;
         background: #000;
+      }
+
+      .mobile-controls,
+      .rotate-hint {
+        display: none;
+      }
+
+      .mobile-controls {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        pointer-events: none;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .joystick {
+        position: absolute;
+        left: max(18px, env(safe-area-inset-left));
+        bottom: max(20px, env(safe-area-inset-bottom));
+        width: 132px;
+        height: 132px;
+        border: 3px solid rgba(255, 207, 51, 0.86);
+        border-radius: 999px;
+        background: rgba(5, 5, 5, 0.44);
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.72), inset 0 0 24px rgba(255, 207, 51, 0.12);
+        pointer-events: auto;
+        touch-action: none;
+      }
+
+      .joystick-knob {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 52px;
+        height: 52px;
+        border: 3px solid #000;
+        border-radius: 999px;
+        background: #ffcf33;
+        box-shadow: 4px 4px 0 #000;
+        transform: translate(-50%, -50%);
+      }
+
+      .action-pad {
+        position: absolute;
+        right: max(16px, env(safe-area-inset-right));
+        bottom: max(18px, env(safe-area-inset-bottom));
+        display: grid;
+        grid-template-columns: repeat(2, 74px);
+        gap: 10px;
+        pointer-events: auto;
+      }
+
+      .action-pad button {
+        height: 58px;
+        border: 3px solid #000;
+        border-radius: 12px;
+        background: #ffcf33;
+        color: #050505;
+        box-shadow: 4px 4px 0 #000;
+        font: 900 11px Arial, sans-serif;
+        letter-spacing: 0;
+        text-transform: uppercase;
+        touch-action: none;
+      }
+
+      .action-pad button:active,
+      .action-pad button.is-held {
+        transform: translate(3px, 3px);
+        box-shadow: 1px 1px 0 #000;
       }
 
       #status {
@@ -42,11 +113,49 @@
         font-weight: 900;
         text-transform: uppercase;
       }
+
+      @media (pointer: coarse) {
+        .mobile-controls {
+          display: block;
+        }
+
+        #canvas {
+          height: 100dvh;
+        }
+      }
+
+      @media (pointer: coarse) and (orientation: portrait) {
+        .rotate-hint {
+          position: fixed;
+          inset: 0;
+          z-index: 20;
+          display: grid;
+          place-items: center;
+          padding: 24px;
+          background: #050505;
+          color: #ffcf33;
+          text-align: center;
+          font: 900 18px Arial, sans-serif;
+          text-transform: uppercase;
+        }
+      }
     </style>
   </head>
   <body>
     <canvas id="canvas" tabindex="0" oncontextmenu="event.preventDefault()"></canvas>
     <div id="status">Loading DOOM...</div>
-    <script src="/games/doom/doom-loader.js?v=10"></script>
+    <div class="mobile-controls" aria-label="DOOM mobile controls">
+      <div class="joystick" id="joystick" aria-label="Move">
+        <div class="joystick-knob" id="joystick-knob"></div>
+      </div>
+      <div class="action-pad">
+        <button type="button" data-doom-key="Control" data-doom-code="ControlLeft" data-doom-keycode="17">Fire</button>
+        <button type="button" data-doom-key=" " data-doom-code="Space" data-doom-keycode="32">Use</button>
+        <button type="button" data-doom-key="Shift" data-doom-code="ShiftLeft" data-doom-keycode="16">Run</button>
+        <button type="button" data-doom-key="Escape" data-doom-code="Escape" data-doom-keycode="27">Menu</button>
+      </div>
+    </div>
+    <div class="rotate-hint">Rotate your phone sideways for the best DOOM controls.</div>
+    <script src="/games/doom/doom-loader.js?v=11"></script>
   </body>
 </html>
