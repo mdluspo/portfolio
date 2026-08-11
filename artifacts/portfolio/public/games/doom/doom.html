@@ -64,6 +64,11 @@
         bottom: max(72px, calc(env(safe-area-inset-bottom) + 72px));
       }
 
+      .aim-stick {
+        right: max(20px, env(safe-area-inset-right));
+        bottom: max(82px, calc(env(safe-area-inset-bottom) + 82px));
+      }
+
       .joystick-knob {
         position: absolute;
         left: 50%;
@@ -98,19 +103,19 @@
       .right-side-actions {
         position: absolute;
         right: max(16px, env(safe-area-inset-right));
-        top: 32%;
+        top: 24%;
         display: grid;
-        gap: 18px;
+        gap: 14px;
         pointer-events: auto;
       }
 
       .action-pad {
         position: absolute;
-        right: max(24px, env(safe-area-inset-right));
-        bottom: max(92px, calc(env(safe-area-inset-bottom) + 92px));
+        right: max(154px, calc(env(safe-area-inset-right) + 154px));
+        bottom: max(116px, calc(env(safe-area-inset-bottom) + 116px));
         display: grid;
-        grid-template-columns: 78px;
-        grid-template-rows: 78px;
+        grid-template-columns: 62px;
+        grid-template-rows: 62px;
         align-items: center;
         justify-items: center;
         pointer-events: auto;
@@ -137,10 +142,11 @@
       .action-pad .primary-action {
         grid-column: 1;
         grid-row: 1;
-        width: 78px;
-        height: 78px;
+        width: 62px;
+        height: 62px;
         border-radius: 999px;
-        background: rgba(215, 238, 255, 0.2);
+        background: rgba(255, 207, 51, 0.28);
+        border-color: rgba(255, 228, 112, 0.92);
         font-size: 11px;
       }
 
@@ -157,7 +163,42 @@
       }
 
       .primary-action .action-icon {
-        font-size: 22px;
+        font-size: 24px;
+      }
+
+      .bullet-icon {
+        position: relative;
+        width: 28px;
+        height: 14px;
+        transform: rotate(-18deg);
+      }
+
+      .bullet-icon::before,
+      .bullet-icon::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        display: block;
+      }
+
+      .bullet-icon::before {
+        right: 0;
+        width: 21px;
+        height: 10px;
+        border: 2px solid rgba(5, 5, 5, 0.88);
+        border-left-width: 6px;
+        border-radius: 999px 5px 5px 999px;
+        background: #ffcf33;
+      }
+
+      .bullet-icon::after {
+        left: 0;
+        width: 12px;
+        height: 3px;
+        border-radius: 999px;
+        background: rgba(255, 244, 181, 0.9);
+        box-shadow: -6px 0 0 rgba(255, 244, 181, 0.42);
       }
 
       .action-label {
@@ -283,6 +324,11 @@
           bottom: max(58px, calc(env(safe-area-inset-bottom) + 58px));
         }
 
+        .aim-stick {
+          right: max(20px, env(safe-area-inset-right));
+          bottom: max(62px, calc(env(safe-area-inset-bottom) + 62px));
+        }
+
         .joystick-knob {
           width: 40px;
           height: 40px;
@@ -290,13 +336,13 @@
 
         .right-side-actions {
           right: max(14px, env(safe-area-inset-right));
-          top: 29%;
-          gap: 20px;
+          top: 18%;
+          gap: 12px;
         }
 
         .action-pad {
-          right: max(30px, env(safe-area-inset-right));
-          bottom: max(62px, calc(env(safe-area-inset-bottom) + 62px));
+          right: max(142px, calc(env(safe-area-inset-right) + 142px));
+          bottom: max(86px, calc(env(safe-area-inset-bottom) + 86px));
         }
 
         .crosshair-action {
@@ -333,6 +379,9 @@
       <div class="joystick move-stick" data-stick="move" aria-label="Move">
         <div class="joystick-knob"></div>
       </div>
+      <div class="joystick aim-stick game-action" data-stick="aim" data-tap-fire="true" aria-label="Aim joystick. Tap to fire.">
+        <div class="joystick-knob"></div>
+      </div>
       <div class="menu-pad" aria-label="Menu navigation">
         <button type="button" data-menu-step="true" data-doom-key="ArrowUp" data-doom-code="ArrowUp" data-doom-keycode="38" aria-label="Menu up">&#8593;</button>
         <button type="button" class="menu-select" data-menu-select="true" data-doom-key="Enter" data-doom-code="Enter" data-doom-keycode="13">Enter</button>
@@ -349,7 +398,7 @@
         <button type="button" class="game-action run-action" data-doom-key="Shift" data-doom-code="ShiftLeft" data-doom-keycode="16" aria-label="Run"><span class="action-icon">&#8593;</span></button>
       </div>
       <div class="action-pad">
-        <button type="button" class="primary-action game-action" data-doom-key=" " data-doom-code="Space" data-doom-keycode="32" aria-label="Fire"><span class="action-icon">&#9679;</span></button>
+        <button type="button" class="primary-action game-action" data-doom-key=" " data-doom-code="Space" data-doom-keycode="32" aria-label="Fire"><span class="action-icon bullet-icon" aria-hidden="true"></span></button>
       </div>
     </div>
     <div class="focus-menu" id="focus-menu">
@@ -359,6 +408,6 @@
       </div>
     </div>
     <div class="rotate-hint">Rotate your phone sideways for the best DOOM controls.</div>
-    <script src="/games/doom/doom-loader.js?v=16"></script>
+    <script src="/games/doom/doom-loader.js?v=17"></script>
   </body>
 </html>

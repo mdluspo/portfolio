@@ -92,11 +92,11 @@ const GAMES: Array<{
     title: "DOOM II",
     meta: "FPS / WAD / 1994",
     status: "READY",
-    src: "/games/doom/doom.html?v=16",
+    src: "/games/doom/doom.html?v=17",
     accent: "bg-[#ffcf33]",
     label: "DII",
     thumbnail: "/doom.jpg",
-    controls: ["Left stick: move / menu navigation", "Drag screen: turn / aim", "Fire: Space / Fire button", "Use: E / Use button", "Run: Shift / Run button", "Menu: Esc / Menu button"],
+    controls: ["Left stick: move / menu navigation", "Right stick: aim / tap to fire", "Fire: Space / bullet button", "Use: E / Use button", "Run: Shift / Run button", "Menu: Esc / Menu button"],
   },
 ];
 

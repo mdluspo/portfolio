@@ -217,11 +217,17 @@ function setupMobileControls() {
   document.querySelectorAll("[data-stick]").forEach((stick) => {
     const stickName = stick.dataset.stick;
     const knob = stick.querySelector(".joystick-knob");
+    let startX = 0;
+    let startY = 0;
+    let moved = false;
     if (!stickName || !knob) return;
 
     stick.addEventListener("pointerdown", (event) => {
       event.preventDefault();
       stick.setPointerCapture(event.pointerId);
+      startX = event.clientX;
+      startY = event.clientY;
+      moved = false;
       resumeGame();
       if (stickName === "aim") setControlMode("game");
       applyJoystick(stick, knob, stickName, event.clientX, event.clientY);
@@ -230,6 +236,9 @@ function setupMobileControls() {
     stick.addEventListener("pointermove", (event) => {
       if (!stick.hasPointerCapture(event.pointerId)) return;
       event.preventDefault();
+      if (Math.hypot(event.clientX - startX, event.clientY - startY) > 10) {
+        moved = true;
+      }
       applyJoystick(stick, knob, stickName, event.clientX, event.clientY);
     });
 
@@ -237,6 +246,9 @@ function setupMobileControls() {
       stick.addEventListener(type, (event) => {
         if (stick.hasPointerCapture(event.pointerId)) {
           stick.releasePointerCapture(event.pointerId);
+        }
+        if (type === "pointerup" && stick.dataset.tapFire === "true" && !moved) {
+          tapDoomKey("aim-stick-fire", doomKeyMap[" "], 100);
         }
         resetJoystick(knob, stickName);
       });
