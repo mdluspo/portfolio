@@ -64,13 +64,6 @@
         bottom: max(20px, env(safe-area-inset-bottom));
       }
 
-      .aim-stick {
-        right: max(116px, calc(env(safe-area-inset-right) + 116px));
-        bottom: max(84px, calc(env(safe-area-inset-bottom) + 84px));
-        width: 118px;
-        height: 118px;
-      }
-
       .joystick-knob {
         position: absolute;
         left: 50%;
@@ -89,29 +82,74 @@
         right: max(16px, env(safe-area-inset-right));
         bottom: max(18px, env(safe-area-inset-bottom));
         display: grid;
-        grid-template-columns: repeat(2, 66px);
-        gap: 9px;
+        grid-template-columns: repeat(3, 58px);
+        grid-template-rows: repeat(3, 58px);
+        align-items: center;
+        justify-items: center;
+        gap: 8px;
         pointer-events: auto;
       }
 
       .action-pad button {
-        height: 54px;
+        width: 58px;
+        height: 58px;
         border: 3px solid #000;
         border-radius: 999px;
-        background: rgba(255, 207, 51, 0.9);
+        background: rgba(255, 207, 51, 0.58);
         color: #050505;
-        box-shadow: 4px 4px 0 #000;
-        font: 900 11px Arial, sans-serif;
+        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.82);
+        backdrop-filter: blur(3px);
+        font: 900 9px Arial, sans-serif;
         letter-spacing: 0;
         text-transform: uppercase;
         touch-action: none;
+        display: grid;
+        place-items: center;
+        gap: 1px;
       }
 
       .action-pad .primary-action {
-        grid-row: span 2;
-        height: 117px;
-        background: #ffcf33;
-        font-size: 13px;
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        width: 76px;
+        height: 126px;
+        border-radius: 999px;
+        background: rgba(255, 207, 51, 0.74);
+        font-size: 12px;
+      }
+
+      .action-pad .use-action {
+        grid-column: 3;
+        grid-row: 1;
+      }
+
+      .action-pad .run-action {
+        grid-column: 3;
+        grid-row: 2;
+      }
+
+      .action-pad .swap-action {
+        grid-column: 1;
+        grid-row: 2;
+      }
+
+      .action-pad .reload-action {
+        grid-column: 2;
+        grid-row: 3;
+      }
+
+      .action-icon {
+        font-size: 19px;
+        line-height: 1;
+      }
+
+      .primary-action .action-icon {
+        font-size: 26px;
+      }
+
+      .action-label {
+        font-size: 8px;
+        line-height: 1;
       }
 
       .action-pad button:active,
@@ -124,7 +162,6 @@
         display: none;
       }
 
-      body.menu-mode .aim-stick,
       body.menu-mode .game-action {
         display: none;
       }
@@ -137,8 +174,26 @@
 
       body.menu-mode .action-pad {
         grid-template-columns: 84px;
+        grid-template-rows: 84px;
         right: max(28px, env(safe-area-inset-right));
         bottom: max(42px, env(safe-area-inset-bottom));
+      }
+
+      .top-mobile-menu {
+        position: absolute;
+        right: max(16px, env(safe-area-inset-right));
+        top: max(12px, env(safe-area-inset-top));
+        width: 46px;
+        height: 46px;
+        border: 3px solid #000;
+        border-radius: 999px;
+        background: rgba(255, 207, 51, 0.58);
+        color: #050505;
+        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.82);
+        backdrop-filter: blur(3px);
+        font: 900 19px Arial, sans-serif;
+        pointer-events: auto;
+        touch-action: none;
       }
 
       .focus-menu {
@@ -216,15 +271,14 @@
       <div class="joystick move-stick" data-stick="move" aria-label="Move">
         <div class="joystick-knob"></div>
       </div>
-      <div class="joystick aim-stick" data-stick="aim" aria-label="Aim">
-        <div class="joystick-knob"></div>
-      </div>
+      <button type="button" class="top-mobile-menu game-action" data-control-mode="menu" data-doom-key="Escape" data-doom-code="Escape" data-doom-keycode="27" aria-label="Menu">☰</button>
       <div class="action-pad">
-        <button type="button" class="menu-select" data-control-mode="game" data-doom-key=" " data-doom-code="Space" data-doom-keycode="32">Select</button>
-        <button type="button" class="primary-action game-action" data-control-mode="game" data-doom-key=" " data-doom-code="Space" data-doom-keycode="32">Fire</button>
-        <button type="button" class="game-action" data-control-mode="game" data-doom-key="e" data-doom-code="KeyE" data-doom-keycode="69">Use</button>
-        <button type="button" class="game-action" data-control-mode="game" data-doom-key="Shift" data-doom-code="ShiftLeft" data-doom-keycode="16">Run</button>
-        <button type="button" class="game-action" data-control-mode="menu" data-doom-key="Escape" data-doom-code="Escape" data-doom-keycode="27">Menu</button>
+        <button type="button" class="menu-select" data-menu-select="true" data-doom-key=" " data-doom-code="Space" data-doom-keycode="32">Select</button>
+        <button type="button" class="primary-action game-action" data-doom-key=" " data-doom-code="Space" data-doom-keycode="32"><span class="action-icon">●</span><span class="action-label">Fire</span></button>
+        <button type="button" class="game-action use-action" data-doom-key="e" data-doom-code="KeyE" data-doom-keycode="69"><span class="action-icon">✋</span><span class="action-label">Use</span></button>
+        <button type="button" class="game-action run-action" data-doom-key="Shift" data-doom-code="ShiftLeft" data-doom-keycode="16"><span class="action-icon">↟</span><span class="action-label">Run</span></button>
+        <button type="button" class="game-action swap-action" data-doom-key="1" data-doom-code="Digit1" data-doom-keycode="49"><span class="action-icon">⇄</span><span class="action-label">Swap</span></button>
+        <button type="button" class="game-action reload-action" data-doom-key="r" data-doom-code="KeyR" data-doom-keycode="82"><span class="action-icon">↻</span><span class="action-label">Reload</span></button>
       </div>
     </div>
     <div class="focus-menu" id="focus-menu">
@@ -234,6 +288,6 @@
       </div>
     </div>
     <div class="rotate-hint">Rotate your phone sideways for the best DOOM controls.</div>
-    <script src="/games/doom/doom-loader.js?v=11"></script>
+    <script src="/games/doom/doom-loader.js?v=12"></script>
   </body>
 </html>

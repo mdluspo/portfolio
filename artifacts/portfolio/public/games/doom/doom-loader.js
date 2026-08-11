@@ -23,6 +23,10 @@ const doomKeyMap = {
 };
 const heldMobileKeys = new Map();
 const lastTapById = new Map();
+let menuSelectCount = 0;
+let aimPointerId = null;
+let aimLastX = 0;
+let aimAccumX = 0;
 
 function setStatus(text) {
   if (statusEl) statusEl.textContent = text;
@@ -79,6 +83,7 @@ function resumeGame() {
 
 function setControlMode(mode) {
   document.body.classList.toggle("menu-mode", mode === "menu");
+  if (mode === "menu") menuSelectCount = 0;
 }
 
 function isMenuMode() {
@@ -150,16 +155,6 @@ function setupMobileControls() {
       return;
     }
 
-    if (stickName === "aim") {
-      Object.keys(bindings).forEach((name) => releaseDoomKey(`${stickName}-${name}`));
-      const aimThreshold = rect.width * 0.24;
-      const dominant = Math.abs(rawX) <= aimThreshold ? null : rawX < 0 ? "left" : "right";
-      if (dominant && bindings[dominant]) {
-        tapDoomKey(`aim-${dominant}`, bindings[dominant], 170);
-      }
-      return;
-    }
-
     Object.entries(bindings).forEach(([name, keyConfig]) => {
       const id = `${stickName}-${name}`;
       if (active[name]) {
@@ -212,22 +207,69 @@ function setupMobileControls() {
     };
     const id = `button-${keyConfig.code}`;
     const nextMode = button.dataset.controlMode;
+    const isMenuSelect = button.dataset.menuSelect === "true";
 
     button.addEventListener("pointerdown", (event) => {
       event.preventDefault();
       button.setPointerCapture?.(event.pointerId);
       button.classList.add("is-held");
       resumeGame();
+      if (isMenuSelect) {
+        tapDoomKey(id, keyConfig, 120);
+        menuSelectCount += 1;
+        if (menuSelectCount >= 2) {
+          window.setTimeout(() => setControlMode("game"), 560);
+        }
+        return;
+      }
       if (nextMode === "game" || nextMode === "menu") setControlMode(nextMode);
-      holdDoomKey(id, keyConfig);
+      if (keyConfig.code === "KeyR" || keyConfig.code === "Digit1" || keyConfig.code === "Escape") {
+        tapDoomKey(id, keyConfig, 140);
+      } else {
+        holdDoomKey(id, keyConfig);
+      }
     });
 
     ["pointerup", "pointercancel", "pointerleave"].forEach((type) => {
       button.addEventListener(type, (event) => {
         button.releasePointerCapture?.(event.pointerId);
         button.classList.remove("is-held");
+        if (isMenuSelect || keyConfig.code === "KeyR" || keyConfig.code === "Digit1" || keyConfig.code === "Escape") return;
         releaseDoomKey(id);
       });
+    });
+  });
+
+  canvas?.addEventListener("pointerdown", (event) => {
+    if (isMenuMode() || event.pointerType === "mouse") return;
+    event.preventDefault();
+    aimPointerId = event.pointerId;
+    aimLastX = event.clientX;
+    aimAccumX = 0;
+    canvas.setPointerCapture?.(event.pointerId);
+    resumeGame();
+  });
+
+  canvas?.addEventListener("pointermove", (event) => {
+    if (aimPointerId !== event.pointerId || isMenuMode()) return;
+    event.preventDefault();
+    const dx = event.clientX - aimLastX;
+    aimLastX = event.clientX;
+    aimAccumX += dx;
+
+    while (Math.abs(aimAccumX) >= 18) {
+      const direction = aimAccumX > 0 ? "right" : "left";
+      tapDoomKey(`drag-${direction}`, stickBindings.aim[direction], 54);
+      aimAccumX += aimAccumX > 0 ? -18 : 18;
+    }
+  });
+
+  ["pointerup", "pointercancel"].forEach((type) => {
+    canvas?.addEventListener(type, (event) => {
+      if (aimPointerId !== event.pointerId) return;
+      canvas.releasePointerCapture?.(event.pointerId);
+      aimPointerId = null;
+      aimAccumX = 0;
     });
   });
 
