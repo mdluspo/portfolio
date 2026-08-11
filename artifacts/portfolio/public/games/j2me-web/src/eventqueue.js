@@ -28,12 +28,11 @@ export class EventQueue {
 
     async waitForEvent() {
         this.started = true;
-        if (this.queue.length > 0) {
-            return this.queue.shift();
+        while (this.queue.length === 0) {
+            await this.promise;
+            this.refreshPromise();
         }
 
-        await this.promise;
-        this.refreshPromise(); // refresh here
         return this.queue.shift();
     }
 }
