@@ -49,57 +49,84 @@
 
       .joystick {
         position: absolute;
-        width: 128px;
-        height: 128px;
-        border: 3px solid rgba(255, 207, 51, 0.78);
+        width: 118px;
+        height: 118px;
+        border: 2px solid rgba(215, 238, 255, 0.82);
         border-radius: 999px;
-        background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.13), rgba(5, 5, 5, 0.44) 58%);
-        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.72), inset 0 0 24px rgba(255, 207, 51, 0.12);
+        background: rgba(3, 10, 18, 0.18);
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.48), inset 0 0 24px rgba(215, 238, 255, 0.13);
         pointer-events: auto;
         touch-action: none;
       }
 
       .move-stick {
         left: max(18px, env(safe-area-inset-left));
-        bottom: max(20px, env(safe-area-inset-bottom));
+        bottom: max(24px, env(safe-area-inset-bottom));
       }
 
       .joystick-knob {
         position: absolute;
         left: 50%;
         top: 50%;
-        width: 52px;
-        height: 52px;
-        border: 3px solid #000;
+        width: 44px;
+        height: 44px;
+        border: 2px solid rgba(215, 238, 255, 0.8);
         border-radius: 999px;
-        background: #ffcf33;
-        box-shadow: 4px 4px 0 #000;
+        background: rgba(215, 238, 255, 0.58);
+        box-shadow: 0 0 12px rgba(215, 238, 255, 0.28);
         transform: translate(-50%, -50%);
+      }
+
+      .top-left-actions {
+        position: absolute;
+        left: max(10px, env(safe-area-inset-left));
+        top: max(10px, env(safe-area-inset-top));
+        display: flex;
+        gap: 6px;
+        pointer-events: auto;
+      }
+
+      .left-side-actions {
+        position: absolute;
+        left: max(96px, calc(env(safe-area-inset-left) + 96px));
+        top: 27%;
+        display: grid;
+        gap: 10px;
+        pointer-events: auto;
+      }
+
+      .right-side-actions {
+        position: absolute;
+        right: max(14px, env(safe-area-inset-right));
+        top: 30%;
+        display: grid;
+        gap: 10px;
+        pointer-events: auto;
       }
 
       .action-pad {
         position: absolute;
-        right: max(16px, env(safe-area-inset-right));
-        bottom: max(18px, env(safe-area-inset-bottom));
+        right: max(22px, env(safe-area-inset-right));
+        top: 50%;
+        transform: translateY(-50%);
         display: grid;
-        grid-template-columns: repeat(3, 58px);
-        grid-template-rows: repeat(3, 58px);
+        grid-template-columns: 78px;
+        grid-template-rows: 78px;
         align-items: center;
         justify-items: center;
-        gap: 8px;
         pointer-events: auto;
       }
 
-      .action-pad button {
-        width: 58px;
-        height: 58px;
-        border: 3px solid #000;
+      .mobile-controls button {
+        width: 46px;
+        height: 46px;
+        border: 2px solid rgba(215, 238, 255, 0.82);
         border-radius: 999px;
-        background: rgba(255, 207, 51, 0.58);
-        color: #050505;
-        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.82);
-        backdrop-filter: blur(3px);
-        font: 900 9px Arial, sans-serif;
+        background: rgba(7, 17, 30, 0.28);
+        color: rgba(245, 251, 255, 0.94);
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.34), inset 0 0 16px rgba(215, 238, 255, 0.12);
+        backdrop-filter: blur(2px);
+        font: 900 8px Arial, sans-serif;
         letter-spacing: 0;
         text-transform: uppercase;
         touch-action: none;
@@ -109,42 +136,29 @@
       }
 
       .action-pad .primary-action {
-        grid-column: 2;
-        grid-row: 1 / span 2;
-        width: 76px;
-        height: 126px;
-        border-radius: 999px;
-        background: rgba(255, 207, 51, 0.74);
-        font-size: 12px;
-      }
-
-      .action-pad .use-action {
-        grid-column: 3;
-        grid-row: 1;
-      }
-
-      .action-pad .run-action {
-        grid-column: 3;
-        grid-row: 2;
-      }
-
-      .action-pad .swap-action {
         grid-column: 1;
-        grid-row: 2;
+        grid-row: 1;
+        width: 78px;
+        height: 78px;
+        border-radius: 999px;
+        background: rgba(215, 238, 255, 0.2);
+        font-size: 11px;
       }
 
-      .action-pad .reload-action {
-        grid-column: 2;
-        grid-row: 3;
+      .crosshair-action {
+        position: absolute;
+        right: max(92px, calc(env(safe-area-inset-right) + 92px));
+        top: 22%;
+        pointer-events: auto;
       }
 
       .action-icon {
-        font-size: 19px;
+        font-size: 18px;
         line-height: 1;
       }
 
       .primary-action .action-icon {
-        font-size: 26px;
+        font-size: 22px;
       }
 
       .action-label {
@@ -152,12 +166,13 @@
         line-height: 1;
       }
 
-      .action-pad button:active,
-      .action-pad button.is-held {
-        transform: translate(3px, 3px);
-        box-shadow: 1px 1px 0 #000;
+      .mobile-controls button:active,
+      .mobile-controls button.is-held {
+        background: rgba(215, 238, 255, 0.42);
+        transform: scale(0.95);
       }
 
+      .menu-pad,
       .menu-select {
         display: none;
       }
@@ -166,34 +181,45 @@
         display: none;
       }
 
-      body.menu-mode .menu-select {
-        display: block;
-        width: 84px;
-        height: 84px;
+      body.menu-mode .action-pad {
+        display: none;
       }
 
-      body.menu-mode .action-pad {
-        grid-template-columns: 84px;
-        grid-template-rows: 84px;
-        right: max(28px, env(safe-area-inset-right));
-        bottom: max(42px, env(safe-area-inset-bottom));
+      body.menu-mode .move-stick {
+        display: none;
+      }
+
+      body.menu-mode .menu-pad {
+        position: absolute;
+        right: max(24px, env(safe-area-inset-right));
+        top: 50%;
+        display: grid;
+        grid-template-columns: 62px;
+        grid-template-rows: repeat(3, 50px);
+        gap: 9px;
+        transform: translateY(-50%);
+        pointer-events: auto;
+      }
+
+      body.menu-mode .menu-pad button {
+        width: 62px;
+        height: 50px;
+        border-radius: 12px;
       }
 
       .top-mobile-menu {
         position: absolute;
-        right: max(16px, env(safe-area-inset-right));
-        top: max(12px, env(safe-area-inset-top));
-        width: 46px;
-        height: 46px;
-        border: 3px solid #000;
-        border-radius: 999px;
-        background: rgba(255, 207, 51, 0.58);
-        color: #050505;
-        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.82);
-        backdrop-filter: blur(3px);
-        font: 900 19px Arial, sans-serif;
+        right: max(10px, env(safe-area-inset-right));
+        top: max(10px, env(safe-area-inset-top));
+        font-size: 18px;
         pointer-events: auto;
-        touch-action: none;
+      }
+
+      .top-left-actions button {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        font-size: 10px;
       }
 
       .focus-menu {
@@ -268,17 +294,30 @@
     <canvas id="canvas" tabindex="0" oncontextmenu="event.preventDefault()"></canvas>
     <div id="status">Loading DOOM...</div>
     <div class="mobile-controls" aria-label="DOOM mobile controls">
+      <div class="top-left-actions">
+        <button type="button" class="game-action" data-control-mode="menu" data-doom-key="Escape" data-doom-code="Escape" data-doom-keycode="27" aria-label="Escape">ESC</button>
+        <button type="button" class="game-action" data-doom-key="Tab" data-doom-code="Tab" data-doom-keycode="9" aria-label="Map">MAP</button>
+      </div>
       <div class="joystick move-stick" data-stick="move" aria-label="Move">
         <div class="joystick-knob"></div>
       </div>
-      <button type="button" class="top-mobile-menu game-action" data-control-mode="menu" data-doom-key="Escape" data-doom-code="Escape" data-doom-keycode="27" aria-label="Menu">☰</button>
+      <div class="menu-pad" aria-label="Menu navigation">
+        <button type="button" data-menu-step="true" data-doom-key="ArrowUp" data-doom-code="ArrowUp" data-doom-keycode="38" aria-label="Menu up">&#8593;</button>
+        <button type="button" class="menu-select" data-menu-select="true" data-doom-key="Enter" data-doom-code="Enter" data-doom-keycode="13">Enter</button>
+        <button type="button" data-menu-step="true" data-doom-key="ArrowDown" data-doom-code="ArrowDown" data-doom-keycode="40" aria-label="Menu down">&#8595;</button>
+      </div>
+      <button type="button" class="top-mobile-menu game-action" data-control-mode="menu" data-doom-key="Escape" data-doom-code="Escape" data-doom-keycode="27" aria-label="Menu">&#9776;</button>
+      <button type="button" class="crosshair-action game-action" data-doom-key="Shift" data-doom-code="ShiftLeft" data-doom-keycode="16" aria-label="Run"><span class="action-icon">&#8853;</span></button>
+      <div class="left-side-actions">
+        <button type="button" class="game-action use-action" data-doom-key="e" data-doom-code="KeyE" data-doom-keycode="69" aria-label="Use"><span class="action-icon">&#9995;</span></button>
+        <button type="button" class="game-action swap-action" data-weapon-cycle="true" aria-label="Swap weapon"><span class="action-icon">&#8644;</span></button>
+      </div>
+      <div class="right-side-actions">
+        <button type="button" class="game-action reload-action" data-doom-key="r" data-doom-code="KeyR" data-doom-keycode="82" aria-label="Reload"><span class="action-icon">&#8635;</span></button>
+        <button type="button" class="game-action run-action" data-doom-key="Shift" data-doom-code="ShiftLeft" data-doom-keycode="16" aria-label="Run"><span class="action-icon">&#8593;</span></button>
+      </div>
       <div class="action-pad">
-        <button type="button" class="menu-select" data-menu-select="true" data-doom-key=" " data-doom-code="Space" data-doom-keycode="32">Select</button>
-        <button type="button" class="primary-action game-action" data-doom-key=" " data-doom-code="Space" data-doom-keycode="32"><span class="action-icon">●</span><span class="action-label">Fire</span></button>
-        <button type="button" class="game-action use-action" data-doom-key="e" data-doom-code="KeyE" data-doom-keycode="69"><span class="action-icon">✋</span><span class="action-label">Use</span></button>
-        <button type="button" class="game-action run-action" data-doom-key="Shift" data-doom-code="ShiftLeft" data-doom-keycode="16"><span class="action-icon">↟</span><span class="action-label">Run</span></button>
-        <button type="button" class="game-action swap-action" data-doom-key="1" data-doom-code="Digit1" data-doom-keycode="49"><span class="action-icon">⇄</span><span class="action-label">Swap</span></button>
-        <button type="button" class="game-action reload-action" data-doom-key="r" data-doom-code="KeyR" data-doom-keycode="82"><span class="action-icon">↻</span><span class="action-label">Reload</span></button>
+        <button type="button" class="primary-action game-action" data-doom-key=" " data-doom-code="Space" data-doom-keycode="32" aria-label="Fire"><span class="action-icon">&#9679;</span></button>
       </div>
     </div>
     <div class="focus-menu" id="focus-menu">
@@ -288,6 +327,6 @@
       </div>
     </div>
     <div class="rotate-hint">Rotate your phone sideways for the best DOOM controls.</div>
-    <script src="/games/doom/doom-loader.js?v=12"></script>
+    <script src="/games/doom/doom-loader.js?v=14"></script>
   </body>
 </html>

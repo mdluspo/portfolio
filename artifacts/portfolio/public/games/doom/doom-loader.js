@@ -23,7 +23,17 @@ const doomKeyMap = {
 };
 const heldMobileKeys = new Map();
 const lastTapById = new Map();
+const weaponKeys = [
+  { key: "2", code: "Digit2", keyCode: 50 },
+  { key: "3", code: "Digit3", keyCode: 51 },
+  { key: "4", code: "Digit4", keyCode: 52 },
+  { key: "5", code: "Digit5", keyCode: 53 },
+  { key: "6", code: "Digit6", keyCode: 54 },
+  { key: "7", code: "Digit7", keyCode: 55 },
+  { key: "1", code: "Digit1", keyCode: 49 },
+];
 let menuSelectCount = 0;
+let weaponIndex = 0;
 let aimPointerId = null;
 let aimLastX = 0;
 let aimAccumX = 0;
@@ -72,6 +82,12 @@ function tapDoomKey(id, keyConfig, cooldown = 180) {
   window.setTimeout(() => dispatchDoomKey("keyup", keyConfig), 42);
 }
 
+function cycleWeapon() {
+  const keyConfig = weaponKeys[weaponIndex % weaponKeys.length];
+  weaponIndex += 1;
+  tapDoomKey("weapon-cycle", keyConfig, 120);
+}
+
 function setFocusMenuVisible(isVisible) {
   focusMenu?.classList.toggle("is-visible", isVisible);
 }
@@ -88,6 +104,27 @@ function setControlMode(mode) {
 
 function isMenuMode() {
   return document.body.classList.contains("menu-mode");
+}
+
+function isTouchLayout() {
+  return window.matchMedia?.("(pointer: coarse)").matches ?? false;
+}
+
+function setupDesktopMouseGuard() {
+  const blockedMouseEvents = ["mousedown", "mouseup", "mousemove", "click", "dblclick", "contextmenu", "wheel"];
+
+  blockedMouseEvents.forEach((type) => {
+    canvas?.addEventListener(
+      type,
+      (event) => {
+        if (isTouchLayout()) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        resumeGame();
+      },
+      true,
+    );
+  });
 }
 
 function setupMobileControls() {
@@ -150,7 +187,7 @@ function setupMobileControls() {
               : "right";
 
       if (dominant && menuBindings[dominant]) {
-        tapDoomKey(`menu-${dominant}`, menuBindings[dominant], 260);
+        tapDoomKey(`menu-${dominant}`, menuBindings[dominant], 360);
       }
       return;
     }
@@ -199,7 +236,7 @@ function setupMobileControls() {
     });
   });
 
-  document.querySelectorAll("[data-doom-key]").forEach((button) => {
+  document.querySelectorAll("[data-doom-key], [data-weapon-cycle]").forEach((button) => {
     const keyConfig = {
       key: button.dataset.doomKey,
       code: button.dataset.doomCode,
@@ -208,22 +245,32 @@ function setupMobileControls() {
     const id = `button-${keyConfig.code}`;
     const nextMode = button.dataset.controlMode;
     const isMenuSelect = button.dataset.menuSelect === "true";
+    const isMenuStep = button.dataset.menuStep === "true";
+    const isWeaponCycle = button.dataset.weaponCycle === "true";
 
     button.addEventListener("pointerdown", (event) => {
       event.preventDefault();
       button.setPointerCapture?.(event.pointerId);
       button.classList.add("is-held");
       resumeGame();
+      if (isWeaponCycle) {
+        cycleWeapon();
+        return;
+      }
+      if (isMenuStep) {
+        tapDoomKey(id, keyConfig, 180);
+        return;
+      }
       if (isMenuSelect) {
         tapDoomKey(id, keyConfig, 120);
         menuSelectCount += 1;
         if (menuSelectCount >= 2) {
-          window.setTimeout(() => setControlMode("game"), 560);
+          window.setTimeout(() => setControlMode("game"), 760);
         }
         return;
       }
       if (nextMode === "game" || nextMode === "menu") setControlMode(nextMode);
-      if (keyConfig.code === "KeyR" || keyConfig.code === "Digit1" || keyConfig.code === "Escape") {
+      if (keyConfig.code === "KeyR" || keyConfig.code === "Digit1" || keyConfig.code === "Escape" || keyConfig.code === "Tab") {
         tapDoomKey(id, keyConfig, 140);
       } else {
         holdDoomKey(id, keyConfig);
@@ -234,7 +281,17 @@ function setupMobileControls() {
       button.addEventListener(type, (event) => {
         button.releasePointerCapture?.(event.pointerId);
         button.classList.remove("is-held");
-        if (isMenuSelect || keyConfig.code === "KeyR" || keyConfig.code === "Digit1" || keyConfig.code === "Escape") return;
+        if (
+          isMenuSelect ||
+          isMenuStep ||
+          isWeaponCycle ||
+          keyConfig.code === "KeyR" ||
+          keyConfig.code === "Digit1" ||
+          keyConfig.code === "Escape" ||
+          keyConfig.code === "Tab"
+        ) {
+          return;
+        }
         releaseDoomKey(id);
       });
     });
@@ -275,6 +332,7 @@ function setupMobileControls() {
 
   window.addEventListener("blur", releaseAllMobileKeys);
   canvas?.addEventListener("blur", () => {
+    if (isTouchLayout()) return;
     releaseAllMobileKeys();
     setControlMode("menu");
     setFocusMenuVisible(true);
@@ -311,7 +369,7 @@ function startDoom() {
     preRun: [
       function preloadFiles() {
         window.Module.FS.createPreloadedFile("", "Doom2.wad", "/games/doom/Doom2.wad", true, true);
-        window.Module.FS.createPreloadedFile("", "default.cfg", "/games/doom/default.cfg", true, true);
+        window.Module.FS.createPreloadedFile("", "default.cfg", "/games/doom/default.cfg?v=14", true, true);
       },
     ],
     onRuntimeInitialized() {
@@ -382,4 +440,5 @@ function startDoom() {
 }
 
 setupMobileControls();
+setupDesktopMouseGuard();
 startDoom();

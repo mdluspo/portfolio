@@ -92,11 +92,11 @@ const GAMES: Array<{
     title: "DOOM II",
     meta: "FPS / WAD / 1994",
     status: "READY",
-    src: "/games/doom/doom.html?v=12",
+    src: "/games/doom/doom.html?v=14",
     accent: "bg-[#ffcf33]",
     label: "DII",
     thumbnail: "/doom.jpg",
-    controls: ["Left stick: move / menu navigation", "Right stick: turn / aim", "Fire: Space / Fire button", "Use: E / Use button", "Run: Shift / Run button", "Menu: Esc / Menu button"],
+    controls: ["Left stick: move / menu navigation", "Drag screen: turn / aim", "Fire: Space / Fire button", "Use: E / Use button", "Run: Shift / Run button", "Menu: Esc / Menu button"],
   },
 ];
 
@@ -329,77 +329,79 @@ export function DesignProcessSection() {
                         }
                   }
                 >
-                  <div
-                    onPointerDown={startGameWindowDrag}
-                    onPointerMove={moveGameWindowDrag}
-                    onPointerUp={stopGameWindowDrag}
-                    onPointerCancel={stopGameWindowDrag}
-                    className="flex min-h-[72px] shrink-0 cursor-move flex-wrap items-center justify-between gap-2 border-b-[3px] border-black bg-secondary px-3 py-3 sm:px-4"
-                  >
-                    <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-                      <span className="truncate font-display text-xs font-black uppercase tracking-widest sm:text-sm">
-                        {selectedGame?.title ?? "DOOM II"}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                      {selectedGame && !isGameWindowMinimized && (
+                  {!isMobile && (
+                    <div
+                      onPointerDown={startGameWindowDrag}
+                      onPointerMove={moveGameWindowDrag}
+                      onPointerUp={stopGameWindowDrag}
+                      onPointerCancel={stopGameWindowDrag}
+                      className="flex min-h-[72px] shrink-0 cursor-move flex-wrap items-center justify-between gap-2 border-b-[3px] border-black bg-secondary px-3 py-3 sm:px-4"
+                    >
+                      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                        <span className="truncate font-display text-xs font-black uppercase tracking-widest sm:text-sm">
+                          {selectedGame?.title ?? "DOOM II"}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        {selectedGame && !isGameWindowMinimized && (
+                          <button
+                            type="button"
+                            aria-label="Show game controls"
+                            onClick={() => setShowGameControls((current) => !current)}
+                            className="border-[2px] border-black bg-white px-1.5 py-1 font-display text-[9px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:px-2 sm:text-[10px]"
+                          >
+                            Controls
+                          </button>
+                        )}
+                        {selectedGame && !isGameWindowMinimized && (
+                          <button
+                            type="button"
+                            aria-label="Resume game"
+                            onClick={focusGameFrame}
+                            className="border-[2px] border-black bg-white px-1.5 py-1 font-display text-[9px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:px-2 sm:text-[10px]"
+                          >
+                            Resume
+                          </button>
+                        )}
                         <button
                           type="button"
-                          aria-label="Show game controls"
-                          onClick={() => setShowGameControls((current) => !current)}
-                          className="border-[2px] border-black bg-white px-1.5 py-1 font-display text-[9px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:px-2 sm:text-[10px]"
+                          aria-label="Minimize game window"
+                          onClick={() => setIsGameWindowMinimized((current) => !current)}
+                          className="flex h-7 w-7 items-center justify-center border-[2px] border-black bg-white font-display text-lg font-black leading-none shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:h-8 sm:w-8"
                         >
-                          Controls
+                          -
                         </button>
-                      )}
-                      {selectedGame && !isGameWindowMinimized && (
                         <button
                           type="button"
-                          aria-label="Resume game"
-                          onClick={focusGameFrame}
-                          className="border-[2px] border-black bg-white px-1.5 py-1 font-display text-[9px] font-black uppercase shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:px-2 sm:text-[10px]"
+                          aria-label="Toggle fullscreen game window"
+                          onClick={() => {
+                            setIsGameWindowFullscreen((current) => !current);
+                            setIsGameWindowMinimized(false);
+                          }}
+                          className="flex h-7 w-7 items-center justify-center border-[2px] border-black bg-white font-display text-sm font-black leading-none shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:h-8 sm:w-8"
                         >
-                          Resume
+                          {isGameWindowFullscreen ? "[]" : "[ ]"}
                         </button>
-                      )}
-                      <button
-                        type="button"
-                        aria-label="Minimize game window"
-                        onClick={() => setIsGameWindowMinimized((current) => !current)}
-                        className="flex h-7 w-7 items-center justify-center border-[2px] border-black bg-white font-display text-lg font-black leading-none shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:h-8 sm:w-8"
-                      >
-                        -
-                      </button>
-                      <button
-                        type="button"
-                        aria-label="Toggle fullscreen game window"
-                        onClick={() => {
-                          setIsGameWindowFullscreen((current) => !current);
-                          setIsGameWindowMinimized(false);
-                        }}
-                        className="flex h-7 w-7 items-center justify-center border-[2px] border-black bg-white font-display text-sm font-black leading-none shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:h-8 sm:w-8"
-                      >
-                        {isGameWindowFullscreen ? "[]" : "[ ]"}
-                      </button>
-                      <button
-                        type="button"
-                        aria-label="Close game window"
-                        onClick={() => {
-                          setIsGameWindowOpen(false);
-                          setIsGameWindowMinimized(false);
-                          setIsGameWindowFullscreen(false);
-                          setActiveGame(null);
-                          setShowGameControls(false);
-                          setGameWindowPosition(null);
-                          setGameWindowDrag(null);
-                          setGameSessionId((current) => current + 1);
-                        }}
-                        className="flex h-7 w-7 items-center justify-center border-[2px] border-black bg-white font-display text-sm font-black leading-none shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:h-8 sm:w-8"
-                      >
-                        X
-                      </button>
+                        <button
+                          type="button"
+                          aria-label="Close game window"
+                          onClick={() => {
+                            setIsGameWindowOpen(false);
+                            setIsGameWindowMinimized(false);
+                            setIsGameWindowFullscreen(false);
+                            setActiveGame(null);
+                            setShowGameControls(false);
+                            setGameWindowPosition(null);
+                            setGameWindowDrag(null);
+                            setGameSessionId((current) => current + 1);
+                          }}
+                          className="flex h-7 w-7 items-center justify-center border-[2px] border-black bg-white font-display text-sm font-black leading-none shadow-[2px_2px_0_0_#000] transition-transform hover:-translate-y-0.5 sm:h-8 sm:w-8"
+                        >
+                          X
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   {!isGameWindowMinimized && (
                     selectedGame ? (
                       <div className="relative min-h-0 flex-1 overflow-hidden bg-black">
