@@ -158,11 +158,7 @@ export function DesignProcessSection() {
     } as KeyboardEventInit;
 
     try {
-      const gameDocument = frameWindow.document;
       frameWindow.dispatchEvent(new KeyboardEvent(type, eventInit));
-      gameDocument.dispatchEvent(new KeyboardEvent(type, eventInit));
-      gameDocument.getElementById("canvas")?.dispatchEvent(new KeyboardEvent(type, eventInit));
-      gameDocument.getElementById("display")?.dispatchEvent(new KeyboardEvent(type, eventInit));
     } catch (error) {
       console.warn("Unable to forward key to game iframe.", error);
     }
@@ -282,11 +278,15 @@ export function DesignProcessSection() {
               </p>
             </div>
 
-            <div className="mx-auto flex w-full max-w-[280px] flex-col items-center gap-4">
-              <div className="relative w-full aspect-[4/5] rounded-2xl border-[3px] border-black bg-primary/15 shadow-[6px_6px_0_0_#000] overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,white_0,white_18%,transparent_19%),linear-gradient(135deg,hsl(208_61%_88%),white)]" />
+            <div className="mx-auto flex w-full max-w-[238px] flex-col items-center gap-4">
+              <div className="relative flex w-full aspect-[4/5] items-center justify-center overflow-hidden rounded-2xl border-[3px] border-black bg-white shadow-[6px_6px_0_0_#000]">
+                <img
+                  src="/luspo-martin-photo.png"
+                  alt="Martin Luspo"
+                  className="h-full w-full object-cover object-center"
+                  draggable={false}
+                />
               </div>
-
               <button
                 type="button"
                 onClick={openDoom}

@@ -9,8 +9,8 @@ const PROJECTS = [
   {
     id: 1,
     title: "ArrowKopo",
-    description: "Featured project placeholder for ArrowKopo.",
-    tags: ["Tools", "Tools", "Tools"],
+    description: "A retro-futuristic HTML5 Canvas arcade survival game with inertia movement, dash mechanics, enemy waves, laser hazards, and cybernetic power-ups.",
+    tags: ["Canvas Game", "Arcade Survival", "JavaScript"],
     color: "project-channel-blue",
     logo: "/AKP.png",
     href: "https://arrowkopo.vercel.app",
@@ -18,8 +18,8 @@ const PROJECTS = [
   {
     id: 2,
     title: "ELife",
-    description: "Featured project placeholder for ELife.",
-    tags: ["Tools", "Tools", "Tools"],
+    description: "An eGovPH hackathon project that itemizes unclaimed citizen benefits using verified records, deterministic rules, and auditable eligibility receipts.",
+    tags: ["Civic Tech", "Rules Engine", "AI Intake"],
     color: "project-channel-green",
     logo: "/e_life.png",
     logoClassName: "project-channel-logo-elife",
@@ -32,6 +32,16 @@ const PROJECTS = [
     tags: ["Tools", "Tools", "Tools"],
     color: "project-channel-yellow",
     href: "#",
+  },
+  {
+    id: 4,
+    title: "Joshua Scents",
+    description: "A fragrance website prototype built for a friend, exploring clean product browsing, scent discovery, and a polished brand feel.",
+    tags: ["E-Commerce", "Product UI", "Client Build"],
+    color: "project-channel-pink",
+    logoText: "JS",
+    logoClassName: "project-channel-logo-js",
+    href: "https://joshua-scents.vercel.app",
   },
 ];
 
@@ -288,6 +298,8 @@ export function ProjectsSection() {
                   <span className="project-channel-image">
                     {project.logo ? (
                       <img src={project.logo} alt="" draggable={false} className={project.logoClassName} />
+                    ) : project.logoText ? (
+                      <span className={cn("project-channel-text-logo", project.logoClassName)}>{project.logoText}</span>
                     ) : (
                       <Gamepad2 size={26} strokeWidth={2.5} />
                     )}
