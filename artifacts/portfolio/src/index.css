@@ -93,75 +93,44 @@
   --shadow-cartoon: 4px 4px 0px 0px hsl(0 0% 0%);
   --shadow-cartoon-hover: 6px 6px 0px 0px hsl(208 61% 60%);
   --shadow-cartoon-sm: 2px 2px 0px 0px hsl(0 0% 0%);
-
-  --page-grid-line: hsl(208 61% 60% / 0.065);
-  --page-grid-dot: hsl(208 61% 60% / 0.1);
-  --page-bg: hsl(0 0% 100%);
-  --section-bg: hsl(0 0% 100%);
-  --panel-bg: hsl(0 0% 100%);
-  --panel-soft-bg: hsl(210 36% 97%);
-  --ink-strong: hsl(0 0% 8%);
-  --ink-muted: hsl(210 12% 18%);
-  --line-strong: hsl(0 0% 0%);
-  --road-shoulder: hsl(208 61% 88%);
-  --road-surface: hsl(0 0% 100%);
-  --road-dash: hsl(208 61% 82%);
-  --road-mask-color: hsl(0 0% 100%);
 }
 
 .dark {
-  --background: 222 22% 12%;
-  --foreground: 214 28% 91%;
+  /* Same base for simplicity, but you can invert it. The prompt asks for white + soft blue. */
+  --background: 0 0% 95%;
+  --foreground: 0 0% 5%;
   
-  --border: 213 26% 72%;
-  --input: 220 16% 22%;
-  --ring: 202 80% 66%;
+  --border: 0 0% 0%;
+  --input: 0 0% 85%;
+  --ring: 208 61% 60%;
   
-  --card: 222 18% 16%;
-  --card-foreground: 214 28% 91%;
-  --card-border: 213 26% 72%;
+  --card: 0 0% 95%;
+  --card-foreground: 0 0% 5%;
+  --card-border: 0 0% 0%;
   
-  --popover: 222 18% 16%;
-  --popover-foreground: 214 28% 91%;
-  --popover-border: 213 26% 72%;
+  --popover: 0 0% 95%;
+  --popover-foreground: 0 0% 5%;
+  --popover-border: 0 0% 0%;
   
-  --primary: 202 79% 68%;
-  --primary-foreground: 222 32% 9%;
-  --primary-border: 213 26% 72%;
+  --primary: 208 61% 60%;
+  --primary-foreground: 0 0% 0%;
+  --primary-border: 0 0% 0%;
   
-  --secondary: 42 92% 62%;
-  --secondary-foreground: 222 32% 9%;
-  --secondary-border: 213 26% 72%;
+  --secondary: 43 96% 58%;
+  --secondary-foreground: 0 0% 0%;
+  --secondary-border: 0 0% 0%;
   
-  --muted: 220 16% 22%;
-  --muted-foreground: 214 20% 74%;
-  --muted-border: 213 26% 72%;
+  --muted: 210 20% 90%;
+  --muted-foreground: 215 16% 40%;
+  --muted-border: 0 0% 0%;
   
-  --accent: 202 79% 68%;
-  --accent-foreground: 222 32% 9%;
-  --accent-border: 213 26% 72%;
+  --accent: 208 61% 60%;
+  --accent-foreground: 0 0% 100%;
+  --accent-border: 0 0% 0%;
   
-  --destructive: 0 78% 64%;
-  --destructive-foreground: 222 32% 9%;
-  --destructive-border: 213 26% 72%;
-
-  --shadow-cartoon: 4px 4px 0px 0px hsl(221 30% 5%);
-  --shadow-cartoon-hover: 6px 6px 0px 0px hsl(202 79% 68%);
-  --shadow-cartoon-sm: 2px 2px 0px 0px hsl(221 30% 5%);
-
-  --page-grid-line: hsl(202 79% 68% / 0.085);
-  --page-grid-dot: hsl(42 92% 62% / 0.11);
-  --page-bg: hsl(222 22% 12%);
-  --section-bg: hsl(222 20% 13% / 0.9);
-  --panel-bg: hsl(222 18% 16%);
-  --panel-soft-bg: hsl(220 17% 20%);
-  --ink-strong: hsl(214 32% 94%);
-  --ink-muted: hsl(214 20% 78%);
-  --line-strong: hsl(213 26% 72%);
-  --road-shoulder: hsl(213 30% 25%);
-  --road-surface: hsl(222 18% 16%);
-  --road-dash: hsl(202 68% 50%);
-  --road-mask-color: hsl(222 22% 12%);
+  --destructive: 0 84% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --destructive-border: 0 0% 0%;
 }
 
 @layer base {
@@ -181,26 +150,13 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    background-color: var(--page-bg);
-    background-image:
-      linear-gradient(var(--page-grid-line) 1px, transparent 1px),
-      linear-gradient(90deg, var(--page-grid-line) 1px, transparent 1px),
-      radial-gradient(var(--page-grid-dot) 1px, transparent 1px);
-    background-size: 56px 56px, 56px 56px, 24px 24px;
+    background-image: radial-gradient(hsl(208 61% 60% / 0.1) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-display tracking-wide;
   }
-}
-
-.portfolio-shell {
-  background-color: var(--page-bg);
-  background-image:
-    linear-gradient(var(--page-grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--page-grid-line) 1px, transparent 1px),
-    radial-gradient(var(--page-grid-dot) 1px, transparent 1px);
-  background-size: 56px 56px, 56px 56px, 24px 24px;
 }
 
 @layer utilities {
@@ -898,24 +854,6 @@
   max-height: 62px;
 }
 
-.project-channel-text-logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 2rem;
-  font-style: italic;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  line-height: 1;
-  color: hsl(330 52% 25%);
-  text-shadow: 1px 1px 0 hsl(0 0% 100% / 0.9);
-}
-
-.project-channel-logo-js {
-  transform: translateY(1px);
-}
-
 .project-channel-selector {
   position: absolute;
   left: 50%;
@@ -1100,214 +1038,4 @@
     width: 82px;
     height: 76px;
   }
-}
-
-.dark body,
-.dark #root {
-  background-color: var(--page-bg);
-  color: var(--ink-strong);
-}
-
-.dark .portfolio-shell {
-  background-color: var(--page-bg) !important;
-  color: var(--ink-strong) !important;
-}
-
-.dark .bg-white,
-.dark .bg-\[\#f7fbff\] {
-  background-color: var(--panel-bg) !important;
-}
-
-.dark .bg-white\/80 {
-  background-color: hsl(222 18% 16% / 0.84) !important;
-}
-
-.dark .portfolio-shell.bg-white {
-  background-color: var(--page-bg) !important;
-}
-
-.dark .bg-primary {
-  background-color: hsl(var(--primary)) !important;
-}
-
-.dark .bg-secondary {
-  background-color: hsl(var(--secondary)) !important;
-}
-
-.dark .bg-pink-200 {
-  background-color: hsl(338 67% 74%) !important;
-}
-
-.dark .bg-green-200 {
-  background-color: hsl(148 52% 68%) !important;
-}
-
-.dark .bg-orange-200 {
-  background-color: hsl(25 82% 66%) !important;
-}
-
-.dark .bg-purple-200 {
-  background-color: hsl(260 61% 76%) !important;
-}
-
-.dark section.bg-white,
-.dark section.bg-\[\#f7fbff\],
-.dark .section-soft-entry {
-  background-color: transparent !important;
-}
-
-.dark section > .absolute.bg-white,
-.dark section > .absolute.bg-white > .absolute.bg-white {
-  background-color: transparent !important;
-}
-
-.dark .text-black,
-.dark .text-gray-800 {
-  color: var(--ink-strong) !important;
-}
-
-.dark .text-gray-400,
-.dark .text-gray-500,
-.dark .text-gray-700 {
-  color: var(--ink-muted) !important;
-}
-
-.dark .border-black {
-  border-color: var(--line-strong) !important;
-}
-
-.dark section .h-1.bg-black {
-  background-color: var(--line-strong) !important;
-}
-
-.dark .shadow-cartoon,
-.dark .shadow-cartoon-blue {
-  box-shadow: 4px 4px 0 hsl(221 30% 5%);
-}
-
-.dark .hero-board-texture {
-  opacity: 1;
-  background-image:
-    linear-gradient(hsl(202 79% 68% / 0.09) 1px, transparent 1px),
-    linear-gradient(90deg, hsl(202 79% 68% / 0.09) 1px, transparent 1px);
-  mask-image: none;
-}
-
-.dark .section-soft-entry::before,
-.dark .section-soft-entry::after {
-  opacity: 0;
-}
-
-.dark .project-preview-image {
-  border-color: hsl(213 26% 72% / 0.38);
-  background:
-    radial-gradient(circle at 50% 38%, hsl(202 79% 68% / 0.16), hsl(222 18% 16% / 0.6) 58%, transparent 74%),
-    hsl(222 18% 16% / 0.72);
-  color: hsl(214 28% 91% / 0.5);
-  box-shadow:
-    inset 0 0 28px hsl(202 79% 68% / 0.1),
-    0 16px 28px hsl(221 30% 5% / 0.22);
-}
-
-.dark .project-preview-copy p {
-  color: var(--ink-muted);
-}
-
-.dark .project-channel-image {
-  border-color: hsl(213 26% 72% / 0.46);
-  background:
-    linear-gradient(180deg, hsl(220 17% 20%), hsl(222 18% 14%));
-  box-shadow:
-    0 3px 0 hsl(221 30% 5% / 0.86),
-    0 9px 14px hsl(221 30% 5% / 0.24);
-}
-
-.dark .project-channel-text-logo {
-  color: hsl(338 70% 78%);
-  text-shadow: none;
-}
-
-.dark .skills-floating-copy,
-.dark .skills-deck-copy,
-.dark .skill-key,
-.dark .skill-key-top span {
-  color: var(--ink-strong);
-}
-
-.dark .skills-keyboard-reset {
-  border-color: var(--line-strong);
-  background: var(--panel-bg);
-  color: var(--ink-strong);
-  box-shadow: 3px 3px 0 hsl(221 30% 5%);
-}
-
-.dark .skills-keyboard-reset:hover {
-  box-shadow: 4px 4px 0 hsl(221 30% 5%);
-}
-
-.dark .skills-keyboard-base {
-  border-color: var(--line-strong);
-  background:
-    linear-gradient(180deg, hsl(219 18% 24%) 0 36%, hsl(220 17% 18%) 66%, hsl(222 20% 12%) 100%);
-  box-shadow:
-    inset 0 -22px 0 hsl(221 22% 10%),
-    inset 0 -30px 0 hsl(202 79% 68% / 0.08),
-    0 9px 0 hsl(221 25% 7%),
-    0 16px 0 hsl(221 30% 5%),
-    0 34px 42px hsl(221 30% 5% / 0.34);
-}
-
-.dark .skills-keyboard-base::before,
-.dark .skills-keyboard-base::after {
-  border-color: hsl(213 26% 72% / 0.28);
-}
-
-.dark .skill-key::before {
-  border-color: var(--line-strong);
-  background:
-    radial-gradient(ellipse at 50% 10%, hsl(202 79% 68% / 0.16), transparent 38%),
-    linear-gradient(180deg, hsl(219 15% 22%), hsl(222 18% 15%) 70%, hsl(221 24% 10%));
-  box-shadow:
-    inset 0 8px 10px hsl(221 30% 5% / 0.35),
-    inset 0 -3px 0 hsl(202 79% 68% / 0.08),
-    0 5px 0 hsl(221 30% 5%),
-    0 10px 10px hsl(221 30% 5% / 0.18);
-}
-
-.dark .skill-key-cap::before,
-.dark .skill-key-top,
-.dark .skill-key-front,
-.dark .skill-key-side {
-  border-color: var(--line-strong);
-}
-
-.dark .skill-key-cap::before {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--key-color) 18%, hsl(220 17% 21%)), hsl(222 19% 13%));
-  box-shadow: 0 4px 0 hsl(221 30% 5% / 0.34);
-}
-
-.dark .skill-key-top {
-  background:
-    linear-gradient(145deg, hsl(219 16% 25%) 0 32%, hsl(220 17% 19%) 58%, color-mix(in srgb, var(--key-color) 18%, hsl(222 18% 15%)) 100%);
-  box-shadow:
-    inset -7px -9px 0 hsl(221 30% 5% / 0.25),
-    inset 5px 5px 0 hsl(202 79% 68% / 0.08),
-    0 5px 0 hsl(221 22% 10%),
-    0 9px 0 hsl(221 30% 5%),
-    0 16px 16px hsl(221 30% 5% / 0.24);
-}
-
-.dark .skill-key-front {
-  background:
-    linear-gradient(180deg, hsl(219 15% 23%), color-mix(in srgb, var(--key-color) 24%, hsl(222 20% 13%)));
-  box-shadow: 0 4px 0 hsl(221 30% 5%);
-}
-
-.dark .skills-deck-copy strong {
-  text-shadow: 2px 2px 0 hsl(221 30% 5%);
-}
-
-.dark .cert-marquee-row img,
-.dark .project-channel-image img {
-  filter: drop-shadow(0 1px 0 hsl(221 30% 5% / 0.4));
 }

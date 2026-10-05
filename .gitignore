@@ -41,16 +41,6 @@ testem.log
 .DS_Store
 Thumbs.db
 
-# Accidental local downloads in portfolio public assets
-artifacts/portfolio/public/*.exe
-artifacts/portfolio/public/*.jar
-artifacts/portfolio/public/scoped_dir*/
-artifacts/portfolio/public/28f7eb17-f437-48fb-8d88-e4437d60836e.jpg
-artifacts/portfolio/public/vanilla-1-4-1-cobblemon-tier-list-v0-2i4rhamubpec1.png
-artifacts/portfolio/public/LUSPO_SC_AI Use Declaration Form.pdf
-artifacts/portfolio/public/RE.PARITY_THESIS.pdf
-artifacts/portfolio/public/REAL_PARITY_THESIS.pdf
-
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 
