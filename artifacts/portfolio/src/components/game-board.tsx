@@ -110,14 +110,42 @@ function nearestRoadPoint(x: number, y: number) {
   return nearest;
 }
 
-function randomDeploymentPoint(pageScroll = window.scrollY) {
-  const s = 0.28 + Math.random() * 0.46;
-  const pt = pointOnScreenPath(s);
+function isDeploymentInRangeOfPath(point: { x: number; y: number }, key: TowerKey, pageScroll = window.scrollY) {
+  if (key === "me") return true;
+
+  const config = towerAttackConfig(key);
+  const towerScreen = { x: point.x, y: point.y - pageScroll - 12 };
+
+  for (let i = 30; i <= 72; i += 3) {
+    const pathPoint = pointOnScreenPath(i / 72);
+    if (Math.hypot(pathPoint.x - towerScreen.x, pathPoint.y - towerScreen.y) <= config.range * 0.92) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function randomDeploymentPoint(key: TowerKey, pageScroll = window.scrollY) {
+  const config = towerAttackConfig(key);
+  const s = key === "me" ? 0.28 + Math.random() * 0.46 : 0.46 + Math.random() * 0.42;
+  return deploymentPointNearPath(key, s, pageScroll, config);
+}
+
+function deploymentPointNearPath(
+  key: TowerKey,
+  pathProgress: number,
+  pageScroll = window.scrollY,
+  config = towerAttackConfig(key),
+) {
+  const pt = pointOnScreenPath(pathProgress);
   const pageWidth = Math.max(document.documentElement.scrollWidth, window.innerWidth);
   const heroHeight = window.innerHeight || 600;
   const isCompact = window.innerWidth < 720;
-  const offsetX = (Math.random() - 0.5) * 120;
-  const aboveRoadOffset = 130 + Math.random() * 165;
+  const side = Math.random() > 0.5 ? 1 : -1;
+  const attackOffset = key === "me" ? 0 : Math.min(config.range * 0.48, 150);
+  const offsetX = key === "me" ? (Math.random() - 0.5) * 120 : side * (40 + Math.random() * 82);
+  const aboveRoadOffset = key === "me" ? 130 + Math.random() * 165 : Math.max(82, attackOffset + Math.random() * 34);
   const minX = isCompact ? 72 : Math.min(pageWidth - 110, Math.max(420, pageWidth * 0.52));
   const maxX = isCompact ? Math.max(minX, pageWidth - 72) : Math.max(minX, pageWidth - 120);
   const minY = 115 + pageScroll;
@@ -127,6 +155,31 @@ function randomDeploymentPoint(pageScroll = window.scrollY) {
     x: clamp(pt.x + offsetX, minX, maxX),
     y: clamp(pt.y - aboveRoadOffset + pageScroll, minY, maxY),
   };
+}
+
+function spacingScore(point: { x: number; y: number }, towers: DeployedTower[], movingKey?: TowerKey) {
+  const otherTowers = towers.filter((tower) => tower.key !== movingKey);
+  if (otherTowers.length === 0) return Number.POSITIVE_INFINITY;
+  return Math.min(...otherTowers.map((tower) => Math.hypot(point.x - tower.x, point.y - tower.y)));
+}
+
+function randomSpreadDeploymentPoint(
+  key: TowerKey,
+  towers: DeployedTower[],
+  pageScroll = window.scrollY,
+) {
+  if (key === "me" || towers.length === 0) return randomDeploymentPoint(key, pageScroll);
+
+  const candidates = Array.from({ length: 14 }, (_, index) => {
+    const lane = index % 7;
+    const jitter = (Math.random() - 0.5) * 0.045;
+    const progress = clamp(0.42 + lane * 0.075 + jitter, 0.34, 0.94);
+    return deploymentPointNearPath(key, progress, pageScroll);
+  });
+
+  return candidates
+    .filter((candidate) => isDeploymentInRangeOfPath(candidate, key, pageScroll))
+    .sort((a, b) => spacingScore(b, towers, key) - spacingScore(a, towers, key))[0] ?? randomDeploymentPoint(key, pageScroll);
 }
 
 function deploymentBounds(pageScroll = window.scrollY) {
@@ -161,6 +214,7 @@ function resolveDeploymentPoint(
   towers: DeployedTower[],
   movingKey?: TowerKey,
   pageScroll = window.scrollY,
+  isValid: (point: { x: number; y: number }) => boolean = () => true,
 ) {
   const bounds = deploymentBounds(pageScroll);
   const base = {
@@ -168,7 +222,7 @@ function resolveDeploymentPoint(
     y: clamp(point.y, bounds.minY, bounds.maxY),
   };
 
-  if (!isTowerPointCrowded(base, towers, movingKey)) return base;
+  if (!isTowerPointCrowded(base, towers, movingKey) && isValid(base)) return base;
 
   const rings = [88, 124, 164, 208, 252];
   const directions = [
@@ -188,7 +242,7 @@ function resolveDeploymentPoint(
         x: clamp(base.x + dirX * ring, bounds.minX, bounds.maxX),
         y: clamp(base.y + dirY * ring, bounds.minY, bounds.maxY),
       };
-      if (!isTowerPointCrowded(candidate, towers, movingKey)) return candidate;
+      if (!isTowerPointCrowded(candidate, towers, movingKey) && isValid(candidate)) return candidate;
     }
   }
 
@@ -197,7 +251,7 @@ function resolveDeploymentPoint(
   for (let y = bounds.minY; y <= bounds.maxY; y += stepY) {
     for (let x = bounds.minX; x <= bounds.maxX; x += stepX) {
       const candidate = { x, y };
-      if (!isTowerPointCrowded(candidate, towers, movingKey)) return candidate;
+      if (!isTowerPointCrowded(candidate, towers, movingKey) && isValid(candidate)) return candidate;
     }
   }
 
@@ -463,17 +517,22 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
 
   const deployUnit = useCallback((key: TowerKey) => {
     if (placed.has(key)) return;
-    setDeployedTowers((prev) => ({
-      ...prev,
-      [key]: {
-        key,
-        ...resolveDeploymentPoint(
-          randomDeploymentPoint(),
-          Object.values(prev).filter((tower): tower is DeployedTower => Boolean(tower)),
+    setDeployedTowers((prev) => {
+      const existing = Object.values(prev).filter((tower): tower is DeployedTower => Boolean(tower));
+      return {
+        ...prev,
+        [key]: {
           key,
-        ),
-      },
-    }));
+          ...resolveDeploymentPoint(
+            randomSpreadDeploymentPoint(key, existing),
+            existing,
+            key,
+            window.scrollY,
+            (point) => isDeploymentInRangeOfPath(point, key),
+          ),
+        },
+      };
+    });
     place(key);
   }, [place, placed]);
 
@@ -485,10 +544,15 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
       [autoDeployKey]: {
         key: autoDeployKey,
         ...resolveDeploymentPoint(
-          randomDeploymentPoint(0),
+          randomSpreadDeploymentPoint(
+            autoDeployKey,
+            Object.values(prev).filter((tower): tower is DeployedTower => Boolean(tower)),
+            0,
+          ),
           Object.values(prev).filter((tower): tower is DeployedTower => Boolean(tower)),
           autoDeployKey,
           0,
+          (point) => isDeploymentInRangeOfPath(point, autoDeployKey, 0),
         ),
       },
     }));
@@ -545,13 +609,15 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
 
       UNITS.forEach(({ key }) => {
         if (!placed.has(key) || next[key]) return;
+        const existing = Object.values(next).filter((tower): tower is DeployedTower => Boolean(tower));
         next[key] = {
           key,
           ...resolveDeploymentPoint(
-            randomDeploymentPoint(0),
-            Object.values(next).filter((tower): tower is DeployedTower => Boolean(tower)),
+            randomSpreadDeploymentPoint(key, existing, 0),
+            existing,
             key,
             0,
+            (point) => isDeploymentInRangeOfPath(point, key, 0),
           ),
         };
         changed = true;
@@ -1122,10 +1188,10 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
         >
           <defs>
             <linearGradient id="road-left-fade" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="white" stopOpacity="0.08" />
-              <stop offset="10%" stopColor="white" stopOpacity="0.35" />
-              <stop offset="24%" stopColor="white" stopOpacity="1" />
-              <stop offset="100%" stopColor="white" stopOpacity="1" />
+              <stop offset="0%" stopColor="var(--road-mask-color)" stopOpacity="0.08" />
+              <stop offset="10%" stopColor="var(--road-mask-color)" stopOpacity="0.35" />
+              <stop offset="24%" stopColor="var(--road-mask-color)" stopOpacity="1" />
+              <stop offset="100%" stopColor="var(--road-mask-color)" stopOpacity="1" />
             </linearGradient>
             <mask id="road-left-mask">
               <rect width="1200" height="600" fill="url(#road-left-fade)" />
@@ -1136,7 +1202,7 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
             <path
               d={ROAD_PATH_D}
               fill="none"
-              stroke="hsl(208 61% 88%)"
+              stroke="var(--road-shoulder)"
               strokeWidth="90"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -1144,7 +1210,7 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
             <path
               d={ROAD_PATH_D}
               fill="none"
-              stroke="white"
+              stroke="var(--road-surface)"
               strokeWidth="62"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -1153,7 +1219,7 @@ export function GameBoard({ autoDeployKey }: GameBoardProps) {
               className="road-dashes"
               d={ROAD_PATH_D}
               fill="none"
-              stroke="hsl(208 61% 82%)"
+              stroke="var(--road-dash)"
               strokeWidth="3"
               strokeLinecap="round"
               strokeDasharray="16 18"

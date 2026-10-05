@@ -60,8 +60,6 @@ function dispatchDoomKey(type, keyConfig) {
   };
 
   window.dispatchEvent(new KeyboardEvent(type, eventInit));
-  document.dispatchEvent(new KeyboardEvent(type, eventInit));
-  canvas?.dispatchEvent(new KeyboardEvent(type, eventInit));
 }
 
 function holdDoomKey(id, keyConfig) {
@@ -118,20 +116,21 @@ function isTouchLayout() {
 }
 
 function setupDesktopMouseGuard() {
-  const blockedMouseEvents = ["mousedown", "mouseup", "mousemove", "click", "dblclick", "contextmenu", "wheel"];
+  const mouseResumeEvents = ["mousedown", "mouseup", "mousemove", "click"];
 
-  blockedMouseEvents.forEach((type) => {
+  mouseResumeEvents.forEach((type) => {
     canvas?.addEventListener(
       type,
       (event) => {
         if (isTouchLayout()) return;
-        event.preventDefault();
-        event.stopImmediatePropagation();
         resumeGame();
+        if (type === "mousedown") canvas?.requestPointerLock?.();
       },
-      true,
+      false,
     );
   });
+
+  canvas?.addEventListener("contextmenu", (event) => event.preventDefault());
 }
 
 function setupMobileControls() {
@@ -388,11 +387,11 @@ function startDoom() {
     preRun: [
       function preloadFiles() {
         window.Module.FS.createPreloadedFile("", "Doom2.wad", "/games/doom/Doom2.wad", true, true);
-        window.Module.FS.createPreloadedFile("", "default.cfg", "/games/doom/default.cfg?v=14", true, true);
+        window.Module.FS.createPreloadedFile("", "default.cfg", "/games/doom/default.cfg?v=18", true, true);
       },
     ],
     onRuntimeInitialized() {
-      setStatus("Loaded. Click the game, then use arrows/WASD, Ctrl or Space to fire.");
+      setStatus("Loaded. Click the game, then use mouse, arrows/WASD, Ctrl or Space.");
       canvas?.focus();
       window.callMain([
         "-iwad",
