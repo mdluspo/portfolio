@@ -68,6 +68,7 @@ function positiveModulo(value: number, divisor: number) {
 
 export function ProjectsSection() {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [previewDirection, setPreviewDirection] = useState<"next" | "previous">("next");
   const [trackX, setTrackX] = useState(0);
   const channelRef = useRef<HTMLDivElement | null>(null);
   const offsetRef = useRef(0);
@@ -174,6 +175,10 @@ export function ProjectsSection() {
       setTrackX(nextTrackX);
 
       if (nextIndex !== selectedIndexRef.current) {
+        const previousIndex = selectedIndexRef.current;
+        const forwardSteps = positiveModulo(nextIndex - previousIndex, PROJECTS.length);
+        const backwardSteps = positiveModulo(previousIndex - nextIndex, PROJECTS.length);
+        setPreviewDirection(forwardSteps <= backwardSteps ? "next" : "previous");
         selectedIndexRef.current = nextIndex;
         setSelectedIndex(nextIndex);
       }
@@ -223,7 +228,14 @@ export function ProjectsSection() {
         </div>
 
         <div className="project-console">
-          <div key={selectedProject.id} className={cn("project-preview", selectedProject.color)}>
+          <div
+            key={selectedProject.id}
+            className={cn(
+              "project-preview",
+              previewDirection === "next" ? "project-preview-next" : "project-preview-previous",
+              selectedProject.color,
+            )}
+          >
             <div className="project-preview-image">
               {selectedProject.previewImage ? (
                 <img src={selectedProject.previewImage} alt={selectedProject.previewAlt} draggable={false} />

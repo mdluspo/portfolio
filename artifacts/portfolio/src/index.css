@@ -194,6 +194,13 @@
   }
 }
 
+@media (hover: hover) and (pointer: fine) {
+  body,
+  body * {
+    cursor: none !important;
+  }
+}
+
 .portfolio-shell {
   background-color: var(--page-bg);
   background-image:
@@ -201,6 +208,49 @@
     linear-gradient(90deg, var(--page-grid-line) 1px, transparent 1px),
     radial-gradient(var(--page-grid-dot) 1px, transparent 1px);
   background-size: 56px 56px, 56px 56px, 24px 24px;
+}
+
+.orbit-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2147483646;
+  width: 62px;
+  height: 62px;
+  opacity: 1;
+  pointer-events: none;
+  mix-blend-mode: difference;
+  will-change: transform;
+}
+
+.orbit-cursor-ring,
+.orbit-cursor-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.orbit-cursor-ring {
+  width: 62px;
+  height: 62px;
+  fill: none;
+  stroke: hsl(0 0% 100% / 0.92);
+  stroke-width: 2.8;
+}
+
+.orbit-cursor-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: hsl(0 0% 100% / 0.95);
+  box-shadow: 0 0 10px hsl(0 0% 100% / 0.58);
+}
+
+@media (hover: none), (pointer: coarse) {
+  .orbit-cursor {
+    display: none;
+  }
 }
 
 @layer utilities {
@@ -734,9 +784,17 @@
   align-items: center;
   min-height: 390px;
   padding: clamp(1rem, 5vw, 3.5rem) clamp(1rem, 5vw, 4rem) 11.25rem;
-  animation: project-preview-fade 480ms ease both;
+  animation: project-preview-in-next 520ms cubic-bezier(0.2, 0.84, 0.28, 1) both;
   background: transparent;
   user-select: none;
+}
+
+.project-preview-next {
+  animation-name: project-preview-in-next;
+}
+
+.project-preview-previous {
+  animation-name: project-preview-in-previous;
 }
 
 .project-preview-image {
@@ -1049,15 +1107,28 @@
   background: transparent;
 }
 
-@keyframes project-preview-fade {
+@keyframes project-preview-in-next {
   from {
     opacity: 0;
-    transform: translateY(18px) scale(0.985);
+    transform: translateX(36px) scale(0.985);
     filter: blur(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes project-preview-in-previous {
+  from {
+    opacity: 0;
+    transform: translateX(-36px) scale(0.985);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
     filter: blur(0);
   }
 }
