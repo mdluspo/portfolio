@@ -8,40 +8,46 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 const PROJECTS = [
   {
     id: 1,
-    title: "ArrowKopo",
-    description: "A retro-futuristic HTML5 Canvas arcade survival game with inertia movement, dash mechanics, enemy waves, laser hazards, and cybernetic power-ups.",
-    tags: ["Canvas Game", "Arcade Survival", "JavaScript"],
-    color: "project-channel-blue",
-    logo: "/AKP.png",
-    href: "https://arrowkopo.vercel.app",
-  },
-  {
-    id: 2,
     title: "ELife",
     description: "An eGovPH hackathon project that itemizes unclaimed citizen benefits using verified records, deterministic rules, and auditable eligibility receipts.",
     tags: ["Civic Tech", "Rules Engine", "AI Intake"],
     color: "project-channel-green",
     logo: "/e_life.png",
     logoClassName: "project-channel-logo-elife",
+    previewImage: "/elife.png",
+    previewAlt: "eLife project landing page preview",
     href: "https://elife-egovph.vercel.app",
   },
   {
-    id: 3,
-    title: "Parity",
-    description: "Featured project placeholder for Parity.",
-    tags: ["Tools", "Tools", "Tools"],
-    color: "project-channel-yellow",
-    href: "#",
+    id: 2,
+    title: "ArrowKopo",
+    description: "A retro-futuristic HTML5 Canvas arcade survival game with inertia movement, dash mechanics, enemy waves, laser hazards, and cybernetic power-ups.",
+    tags: ["Canvas Game", "Arcade Survival", "JavaScript"],
+    color: "project-channel-blue",
+    logo: "/AKP.png",
+    previewImage: "/akp_img.png",
+    previewAlt: "ArrowKopo arcade game preview",
+    href: "https://arrowkopo.vercel.app",
   },
   {
-    id: 4,
+    id: 3,
     title: "Joshua Scents",
     description: "A fragrance website prototype built for a friend, exploring clean product browsing, scent discovery, and a polished brand feel.",
     tags: ["E-Commerce", "Product UI", "Client Build"],
     color: "project-channel-pink",
     logoText: "JS",
     logoClassName: "project-channel-logo-js",
+    previewImage: "/js.png",
+    previewAlt: "Joshua Scents discovery sets website preview",
     href: "https://joshua-scents.vercel.app",
+  },
+  {
+    id: 4,
+    title: "Parity",
+    description: "Featured project placeholder for Parity.",
+    tags: ["Tools", "Tools", "Tools"],
+    color: "project-channel-yellow",
+    href: "#",
   },
 ];
 
@@ -219,8 +225,14 @@ export function ProjectsSection() {
         <div className="project-console">
           <div key={selectedProject.id} className={cn("project-preview", selectedProject.color)}>
             <div className="project-preview-image">
-              <Gamepad2 size={54} strokeWidth={2.5} />
-              <span>Project Image</span>
+              {selectedProject.previewImage ? (
+                <img src={selectedProject.previewImage} alt={selectedProject.previewAlt} draggable={false} />
+              ) : (
+                <>
+                  <Gamepad2 size={54} strokeWidth={2.5} />
+                  <span>Project Image</span>
+                </>
+              )}
             </div>
             <div className="project-preview-copy">
               <h3>{selectedProject.title}</h3>
