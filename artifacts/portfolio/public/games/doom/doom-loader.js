@@ -20,6 +20,7 @@ const resumeButton = document.getElementById("resume-game");
 const doomKeyMap = {
   e: { key: "e", code: "KeyE", keyCode: 69 },
   " ": { key: " ", code: "Space", keyCode: 32 },
+  shift: { key: "Shift", code: "ShiftLeft", keyCode: 16 },
 };
 const menuKeyboardMap = {
   w: { key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
@@ -50,6 +51,7 @@ function setStatus(text) {
 }
 
 function dispatchDoomKey(type, keyConfig) {
+  if (!keyConfig?.code || Number.isNaN(keyConfig.keyCode)) return;
   const eventInit = {
       key: keyConfig.key,
       code: keyConfig.code,
@@ -59,7 +61,7 @@ function dispatchDoomKey(type, keyConfig) {
       cancelable: true,
   };
 
-  window.dispatchEvent(new KeyboardEvent(type, eventInit));
+  (canvas ?? document ?? window).dispatchEvent(new KeyboardEvent(type, eventInit));
 }
 
 function holdDoomKey(id, keyConfig) {
@@ -241,9 +243,9 @@ function setupMobileControls() {
       applyJoystick(stick, knob, stickName, event.clientX, event.clientY);
     });
 
-    ["pointerup", "pointercancel", "pointerleave"].forEach((type) => {
+    ["pointerup", "pointercancel", "lostpointercapture"].forEach((type) => {
       stick.addEventListener(type, (event) => {
-        if (stick.hasPointerCapture(event.pointerId)) {
+        if ("pointerId" in event && stick.hasPointerCapture(event.pointerId)) {
           stick.releasePointerCapture(event.pointerId);
         }
         if (type === "pointerup" && stick.dataset.tapFire === "true" && !moved) {
@@ -295,9 +297,11 @@ function setupMobileControls() {
       }
     });
 
-    ["pointerup", "pointercancel", "pointerleave"].forEach((type) => {
+    ["pointerup", "pointercancel", "lostpointercapture"].forEach((type) => {
       button.addEventListener(type, (event) => {
-        button.releasePointerCapture?.(event.pointerId);
+        if ("pointerId" in event && button.hasPointerCapture?.(event.pointerId)) {
+          button.releasePointerCapture?.(event.pointerId);
+        }
         button.classList.remove("is-held");
         if (
           isMenuSelect ||
@@ -387,7 +391,7 @@ function startDoom() {
     preRun: [
       function preloadFiles() {
         window.Module.FS.createPreloadedFile("", "Doom2.wad", "/games/doom/Doom2.wad", true, true);
-        window.Module.FS.createPreloadedFile("", "default.cfg", "/games/doom/default.cfg?v=18", true, true);
+        window.Module.FS.createPreloadedFile("", "default.cfg", "/games/doom/default.cfg?v=19", true, true);
       },
     ],
     onRuntimeInitialized() {

@@ -92,11 +92,11 @@ const GAMES: Array<{
     title: "DOOM II",
     meta: "FPS / WAD / 1994",
     status: "READY",
-    src: "/games/doom/doom.html?v=17",
+    src: "/games/doom/doom.html?v=19",
     accent: "bg-[#ffcf33]",
     label: "DII",
     thumbnail: "/doom.jpg",
-    controls: ["Left stick: move / menu navigation", "Right stick: aim / tap to fire", "Fire: Space / bullet button", "Use: E / Use button", "Run: Shift / Run button", "Menu: Esc / Menu button"],
+    controls: ["Desktop: click the game, then use mouse + WASD/arrows", "Left stick/D-pad: move", "Right stick: turn / tap to fire", "Fire: Space / bullet button", "Use: E / Open button", "Run: Shift / Run button", "Weapon: number keys / WEAP button", "Menu: Esc / Menu button"],
   },
 ];
 
@@ -181,18 +181,44 @@ export function DesignProcessSection() {
   useEffect(() => {
     if (!isGameWindowOpen || !selectedGame || isGameWindowMinimized) return;
 
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
+    const doomKeys = new Map([
+      ["KeyW", { key: "w", code: "KeyW", keyCode: 87 }],
+      ["KeyA", { key: "a", code: "KeyA", keyCode: 65 }],
+      ["KeyS", { key: "s", code: "KeyS", keyCode: 83 }],
+      ["KeyD", { key: "d", code: "KeyD", keyCode: 68 }],
+      ["ArrowUp", { key: "ArrowUp", code: "ArrowUp", keyCode: 38 }],
+      ["ArrowDown", { key: "ArrowDown", code: "ArrowDown", keyCode: 40 }],
+      ["ArrowLeft", { key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 }],
+      ["ArrowRight", { key: "ArrowRight", code: "ArrowRight", keyCode: 39 }],
+      ["Space", { key: " ", code: "Space", keyCode: 32 }],
+      ["KeyE", { key: "e", code: "KeyE", keyCode: 69 }],
+      ["ShiftLeft", { key: "Shift", code: "ShiftLeft", keyCode: 16 }],
+      ["ShiftRight", { key: "Shift", code: "ShiftRight", keyCode: 16 }],
+      ["Tab", { key: "Tab", code: "Tab", keyCode: 9 }],
+      ["Escape", { key: "Escape", code: "Escape", keyCode: 27 }],
+      ["Enter", { key: "Enter", code: "Enter", keyCode: 13 }],
+      ["Digit1", { key: "1", code: "Digit1", keyCode: 49 }],
+      ["Digit2", { key: "2", code: "Digit2", keyCode: 50 }],
+      ["Digit3", { key: "3", code: "Digit3", keyCode: 51 }],
+      ["Digit4", { key: "4", code: "Digit4", keyCode: 52 }],
+      ["Digit5", { key: "5", code: "Digit5", keyCode: 53 }],
+      ["Digit6", { key: "6", code: "Digit6", keyCode: 54 }],
+      ["Digit7", { key: "7", code: "Digit7", keyCode: 55 }],
+    ]);
+
+    const handleGameKey = (event: KeyboardEvent) => {
+      const mapped = doomKeys.get(event.code);
+      if (!mapped) return;
       event.preventDefault();
       focusGameFrame();
-      sendGameKey(event.type as "keydown" | "keyup", "Escape", "Escape", 27);
+      sendGameKey(event.type as "keydown" | "keyup", mapped.key, mapped.code, mapped.keyCode);
     };
 
-    window.addEventListener("keydown", handleEscape, true);
-    window.addEventListener("keyup", handleEscape, true);
+    window.addEventListener("keydown", handleGameKey, true);
+    window.addEventListener("keyup", handleGameKey, true);
     return () => {
-      window.removeEventListener("keydown", handleEscape, true);
-      window.removeEventListener("keyup", handleEscape, true);
+      window.removeEventListener("keydown", handleGameKey, true);
+      window.removeEventListener("keyup", handleGameKey, true);
     };
   }, [isGameWindowOpen, isGameWindowMinimized, selectedGame]);
 
@@ -401,7 +427,7 @@ export function DesignProcessSection() {
                           src={selectedGameSrc}
                           key={`${selectedGame.id}-${isMobile ? "mobile" : "desktop"}-${gameSessionId}`}
                           className="block h-full w-full border-0"
-                          allow="fullscreen; gamepad"
+                          allow="fullscreen; gamepad; pointer-lock"
                           tabIndex={0}
                           onLoad={focusGameFrame}
                           onPointerDown={focusGameFrame}

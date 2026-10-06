@@ -49,8 +49,8 @@
 
       .joystick {
         position: absolute;
-        width: 118px;
-        height: 118px;
+        width: 138px;
+        height: 138px;
         border: 2px solid rgba(215, 238, 255, 0.82);
         border-radius: 999px;
         background: rgba(3, 10, 18, 0.18);
@@ -60,21 +60,21 @@
       }
 
       .move-stick {
-        left: max(18px, env(safe-area-inset-left));
-        top: 27%;
+        left: max(34px, calc(env(safe-area-inset-left) + 26px));
+        top: 29%;
       }
 
       .aim-stick {
-        right: max(20px, env(safe-area-inset-right));
-        top: 21%;
+        right: max(34px, calc(env(safe-area-inset-right) + 26px));
+        top: 24%;
       }
 
       .joystick-knob {
         position: absolute;
         left: 50%;
         top: 50%;
-        width: 44px;
-        height: 44px;
+        width: 52px;
+        height: 52px;
         border: 2px solid rgba(215, 238, 255, 0.8);
         border-radius: 999px;
         background: rgba(215, 238, 255, 0.58);
@@ -84,54 +84,54 @@
 
       .top-left-actions {
         position: absolute;
-        left: max(10px, env(safe-area-inset-left));
-        top: max(10px, env(safe-area-inset-top));
+        left: max(20px, calc(env(safe-area-inset-left) + 14px));
+        top: max(16px, calc(env(safe-area-inset-top) + 12px));
         display: flex;
-        gap: 6px;
+        gap: 8px;
         pointer-events: auto;
       }
 
       .move-dpad {
         position: absolute;
-        left: max(26px, env(safe-area-inset-left));
-        bottom: max(16px, calc(env(safe-area-inset-bottom) + 16px));
-        width: 104px;
-        height: 104px;
+        left: max(38px, calc(env(safe-area-inset-left) + 30px));
+        bottom: max(26px, calc(env(safe-area-inset-bottom) + 24px));
+        width: 126px;
+        height: 126px;
         pointer-events: auto;
       }
 
       .top-right-actions {
         position: absolute;
-        right: max(14px, env(safe-area-inset-right));
-        top: max(10px, env(safe-area-inset-top));
+        right: max(20px, calc(env(safe-area-inset-right) + 14px));
+        top: max(16px, calc(env(safe-area-inset-top) + 12px));
         display: flex;
         align-items: flex-start;
-        gap: 10px;
+        gap: 12px;
         pointer-events: auto;
       }
 
       .action-pad {
         position: absolute;
-        right: max(26px, env(safe-area-inset-right));
-        bottom: max(16px, calc(env(safe-area-inset-bottom) + 16px));
+        right: max(38px, calc(env(safe-area-inset-right) + 30px));
+        bottom: max(26px, calc(env(safe-area-inset-bottom) + 24px));
         display: grid;
-        grid-template-columns: 72px;
-        grid-template-rows: 72px;
+        grid-template-columns: 84px;
+        grid-template-rows: 84px;
         align-items: center;
         justify-items: center;
         pointer-events: auto;
       }
 
       .mobile-controls button {
-        width: 46px;
-        height: 46px;
+        width: 54px;
+        height: 54px;
         border: 2px solid rgba(215, 238, 255, 0.82);
         border-radius: 999px;
         background: rgba(7, 17, 30, 0.28);
         color: rgba(245, 251, 255, 0.94);
         box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.34), inset 0 0 16px rgba(215, 238, 255, 0.12);
         backdrop-filter: blur(2px);
-        font: 900 8px Arial, sans-serif;
+        font: 900 10px Arial, sans-serif;
         letter-spacing: 0;
         text-transform: uppercase;
         touch-action: none;
@@ -143,8 +143,8 @@
       .action-pad .primary-action {
         grid-column: 1;
         grid-row: 1;
-        width: 72px;
-        height: 72px;
+        width: 84px;
+        height: 84px;
         border-radius: 999px;
         background: rgba(255, 207, 51, 0.28);
         border-color: rgba(255, 228, 112, 0.92);
@@ -156,36 +156,43 @@
       }
 
       .open-action {
-        width: 58px;
+        width: 68px;
         border-radius: 10px;
         font-size: 13px;
       }
 
+      .run-action,
+      .weapon-action {
+        width: 58px;
+        border-radius: 10px;
+        font-size: 11px;
+      }
+
       .move-dpad button {
         position: absolute;
-        width: 42px;
-        height: 42px;
+        width: 50px;
+        height: 50px;
         border-radius: 8px;
         font-size: 20px;
       }
 
       .move-dpad .dpad-up {
-        left: 31px;
+        left: 38px;
         top: 0;
       }
 
       .move-dpad .dpad-left {
         left: 0;
-        top: 31px;
+        top: 38px;
       }
 
       .move-dpad .dpad-right {
         right: 0;
-        top: 31px;
+        top: 38px;
       }
 
       .move-dpad .dpad-down {
-        left: 31px;
+        left: 38px;
         bottom: 0;
       }
 
@@ -263,25 +270,29 @@
 
       body.menu-mode .menu-pad {
         position: absolute;
-        right: max(24px, env(safe-area-inset-right));
+        right: max(36px, calc(env(safe-area-inset-right) + 28px));
         top: 50%;
         display: grid;
-        grid-template-columns: 62px;
-        grid-template-rows: repeat(3, 50px);
-        gap: 9px;
+        grid-template-columns: 78px;
+        grid-template-rows: repeat(3, 58px);
+        gap: 10px;
         transform: translateY(-50%);
         pointer-events: auto;
       }
 
+      body.menu-mode .menu-select {
+        display: grid;
+      }
+
       body.menu-mode .menu-pad button {
-        width: 62px;
-        height: 50px;
+        width: 78px;
+        height: 58px;
         border-radius: 12px;
       }
 
       .top-left-actions button {
-        width: 36px;
-        height: 36px;
+        width: 44px;
+        height: 44px;
         border-radius: 8px;
         font-size: 10px;
       }
@@ -339,34 +350,34 @@
 
       @media (pointer: coarse) and (orientation: landscape) and (max-height: 520px) {
         .joystick {
-          width: 108px;
-          height: 108px;
+          width: 122px;
+          height: 122px;
         }
 
         .move-stick {
-          left: max(18px, env(safe-area-inset-left));
-          top: 26%;
+          left: max(28px, calc(env(safe-area-inset-left) + 22px));
+          top: 28%;
         }
 
         .aim-stick {
-          right: max(20px, env(safe-area-inset-right));
-          top: 19%;
+          right: max(28px, calc(env(safe-area-inset-right) + 22px));
+          top: 22%;
         }
 
         .joystick-knob {
-          width: 40px;
-          height: 40px;
+          width: 46px;
+          height: 46px;
         }
 
         .top-right-actions {
-          right: max(14px, env(safe-area-inset-right));
-          top: max(10px, env(safe-area-inset-top));
-          gap: 12px;
+          right: max(18px, calc(env(safe-area-inset-right) + 12px));
+          top: max(14px, calc(env(safe-area-inset-top) + 10px));
+          gap: 10px;
         }
 
         .action-pad {
-          right: max(20px, env(safe-area-inset-right));
-          bottom: max(14px, calc(env(safe-area-inset-bottom) + 14px));
+          right: max(28px, calc(env(safe-area-inset-right) + 20px));
+          bottom: max(20px, calc(env(safe-area-inset-bottom) + 18px));
         }
       }
 
@@ -394,6 +405,7 @@
       <div class="top-left-actions">
         <button type="button" class="game-action" data-control-mode="menu" data-doom-key="Escape" data-doom-code="Escape" data-doom-keycode="27" aria-label="Escape">ESC</button>
         <button type="button" class="game-action" data-doom-key="Tab" data-doom-code="Tab" data-doom-keycode="9" aria-label="Map">MAP</button>
+        <button type="button" class="game-action weapon-action" data-weapon-cycle="true" aria-label="Cycle weapon">WEAP</button>
       </div>
       <div class="joystick move-stick" data-stick="move" aria-label="Move">
         <div class="joystick-knob"></div>
@@ -409,6 +421,7 @@
       <div class="top-right-actions">
         <button type="button" class="top-mobile-menu game-action" data-control-mode="menu" data-doom-key="Escape" data-doom-code="Escape" data-doom-keycode="27" aria-label="Menu">+</button>
         <button type="button" class="game-action open-action" data-doom-key="e" data-doom-code="KeyE" data-doom-keycode="69" aria-label="Open">OPEN</button>
+        <button type="button" class="game-action run-action" data-doom-key="Shift" data-doom-code="ShiftLeft" data-doom-keycode="16" aria-label="Run">RUN</button>
       </div>
       <div class="move-dpad game-action" aria-label="Move buttons">
         <button type="button" class="dpad-up" data-doom-key="w" data-doom-code="KeyW" data-doom-keycode="87" aria-label="Move forward">&#8593;</button>
@@ -427,6 +440,6 @@
       </div>
     </div>
     <div class="rotate-hint">Rotate your phone sideways for the best DOOM controls.</div>
-    <script src="/games/doom/doom-loader.js?v=18"></script>
+    <script src="/games/doom/doom-loader.js?v=19"></script>
   </body>
 </html>
